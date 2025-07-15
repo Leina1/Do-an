@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "937210773117",
+    "project_id": "apptradeup-f767d",
+    "storage_bucket": "apptradeup-f767d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:937210773117:android:d907cecd37ca60392f3b14",
+        "android_client_info": {
+          "package_name": "com.example.apptradeup"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "937210773117-hdohlhgg1d0urp65m8p6rcd742t18bth.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.apptradeup",
+            "certificate_hash": "80cb9c4078e79a668270c06b1e3c068ba092758c"
+          }
+        },
+        {
+          "client_id": "937210773117-bg5it7nf0edkg1u73cuunphdr9cgctqe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdj0o_WHg22aUe9gECp9VXKa2k86gnBv0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "937210773117-bg5it7nf0edkg1u73cuunphdr9cgctqe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

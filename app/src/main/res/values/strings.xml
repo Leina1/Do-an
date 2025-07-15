@@ -1,0 +1,61 @@
+<resources>
+    <string name="app_name">AppTradeUp</string>
+    <string name="default_web_client_id">937210773117-bg5it7nf0edkg1u73cuunphdr9cgctqe.apps.googleusercontent.com</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button_text">Login</string>
+    <string name="forgot_password_text">Forgot Password?</string>
+    <string name="sign_up_text">Dont have an account? Sign Up</string>
+    <string name="full_name_hint">Họ và Tên</string>
+    <string name="confirm_password_hint">Xác nhận mật khẩu</string>
+    <string name="register_button_text">Đăng ký</string>
+    <string name="sign_in_text">Đã có tài khoản? Đăng nhập</string>
+    <string name="Home">Trang chủ</string>
+    <string name="Add_Listing">Đăng bán</string>
+    <string name="Notifications">Thông báo</string>
+    <string name="Profile">Hồ sơ</string>
+    <string name="edit_profile_title">Sửa hồ sơ</string>
+    <string name="name_label">Tên</string>
+    <string name="bio_label">Bio</string>
+    <string name="gender_label">Giới tính</string>
+    <string name="birthday_label">Ngày sinh</string>
+    <string name="email_label">Email</string>
+    <string name="phone_label">Số điện thoại</string>
+    <string name="address_label">Địa chỉ</string>
+    <!--  Thêm địa chỉ  -->
+    <string name="hint_name">Hoàng</string>
+    <string name="hint_bio">Thông tin về bạn</string>
+    <string name="hint_birthday">*******</string>
+    <string name="hint_email">*********</string>
+    <string name="hint_phone">***********</string>
+    <string name="hint_address">Nhập địa chỉ của bạn</string>
+    <!--  Gợi ý địa chỉ  -->
+    <string name="save_changes_button">Lưu thay đổi</string>
+    <string name="add_item_for_sale">Add Item for Sale</string>
+    <string name="back">Back</string>
+    <string name="title">Title</string>
+    <string name="title_item">Sample Item Title</string>
+    <string name="description_item">Description</string>
+    <string name="category_item">Category</string>
+    <string name="condition">Condition</string>
+    <string name="price_item">Price</string>
+    <string name="location_item">Location</string>
+    <string name="preview_item">Preview</string>
+    <string name="post_item">Post</string>
+    <string name="qty_item">Qty</string>
+    <string name="preview_listing">Preview Listing</string>
+    <string name="edit_again">Edit again</string>
+    <string name="manage_listings">Manage Listings</string>
+    <!--  Spinner Item Strings  -->
+    <string name="condition_new">New</string>
+    <string name="condition_like_new">Like New</string>
+    <string name="condition_used">Used</string>
+    <string name="condition_broken">Broken</string>
+    <string-array name="condition_array">
+        <item>@string/condition_new</item>
+        <item>@string/condition_like_new</item>
+        <item>@string/condition_used</item>
+        <item>@string/condition_broken</item>
+    </string-array>
+
+</resources>
