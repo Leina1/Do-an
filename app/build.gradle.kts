@@ -65,6 +65,8 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
 
     implementation("com.google.android.gms:play-services-location:21.0.1")
+
+    implementation ("org.osmdroid:osmdroid-android:6.1.11")
     // Dependencies cho test
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

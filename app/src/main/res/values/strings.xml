@@ -57,5 +57,10 @@
         <item>@string/condition_used</item>
         <item>@string/condition_broken</item>
     </string-array>
+    <string name="Cart">Giỏ hàng</string>
+        <string name="remove_item">Xóa sản phẩm</string>
+        <string name="product_image">Hình ảnh sản phẩm</string>
+        <string name="decrease_quantity">Giảm số lượng</string>
+        <string name="increase_quantity">Tăng số lượng</string>
 
 </resources>

@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.RadioGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -69,7 +70,7 @@ public class EditProfileFragment extends Fragment {
     private FirebaseFirestore db;
     private ImageView profileImageView;
     private Uri imageUri;
-    private Button btnGetLocation;
+    private ImageButton btnGetLocation;
 
     private final ActivityResultLauncher<Intent> imagePickerLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -127,7 +128,7 @@ public class EditProfileFragment extends Fragment {
         edtAddress = view.findViewById(R.id.edtAddress);
         rgGender = view.findViewById(R.id.rgGender);
         btnSave = view.findViewById(R.id.btnSave);
-
+        btnGetLocation = view.findViewById(R.id.btnGetAddress);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
         // Request location permission if needed
 
@@ -139,13 +140,20 @@ public class EditProfileFragment extends Fragment {
         // Event listener for image click to pick a new image
         profileImageView.setOnClickListener(v -> checkStoragePermission());
 
-        edtAddress.setOnClickListener(v -> {
+        btnGetLocation.setOnClickListener(v -> {
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
                 getCurrentLocation();
             } else {
                 locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
             }
+        });
+        edtAddress.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, new PickLocationFragment()) // hoặc container ID tương ứng
+                    .addToBackStack(null)
+                    .commit();
         });
 
 
@@ -205,6 +213,12 @@ public class EditProfileFragment extends Fragment {
                 } else {
                     updateUserProfile(userId, name, bio, birthday, email, phone, address,gender, null);
                 }
+            }
+        });
+        getParentFragmentManager().setFragmentResultListener("location_result", this, (requestKey, bundle) -> {
+            String address = bundle.getString("address");
+            if (address != null && !address.isEmpty()) {
+                edtAddress.setText(address);
             }
         });
         return view;

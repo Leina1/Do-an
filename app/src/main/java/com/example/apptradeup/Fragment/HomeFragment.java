@@ -1,5 +1,6 @@
 package com.example.apptradeup.Fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -7,7 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.text.Editable;
-import android.text.TextWatcher;
+import android.widget.ImageButton;
+import android.widget.Toast;
+
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,12 +18,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.apptradeup.adapter.ProductAdapter;
 import com.example.apptradeup.Product;
 import com.example.apptradeup.R;
+import com.example.apptradeup.CartActivity;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.example.apptradeup.util.GridSpacingItemDecoration;
 import java.util.ArrayList;
 import java.util.List;
-import androidx.recyclerview.widget.GridLayoutManager;
 
 public class HomeFragment extends Fragment {
     private RecyclerView recyclerView;
@@ -30,6 +34,8 @@ public class HomeFragment extends Fragment {
     private FirebaseFirestore db;
     private GridLayoutManager layoutManager;
     private EditText searchEditText;
+    private ImageButton btnCart;
+    private String userId;
 
     public HomeFragment() {}
 
@@ -39,6 +45,9 @@ public class HomeFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.recyclerViewProducts);
         searchEditText = view.findViewById(R.id.searchEditText);
+        btnCart = view.findViewById(R.id.btnCart);
+
+        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         // Khởi tạo layoutManager
         layoutManager = new GridLayoutManager(getContext(), 2);
@@ -64,6 +73,15 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {}
+        });
+        btnCart.setOnClickListener(v -> {
+            if (userId == null) {
+                Toast.makeText(getContext(), "Bạn chưa đăng nhập", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Intent intent = new Intent(getContext(), CartActivity.class);
+            intent.putExtra("userId", userId);
+            startActivity(intent);
         });
         return view;
     }

@@ -6,10 +6,13 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +22,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
@@ -46,6 +50,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import okio.BufferedSink;
 import okio.Okio;
@@ -66,7 +71,11 @@ import javax.annotation.Nullable;
 
 import okio.BufferedSink;
 
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.FusedLocationProviderClient;
+
 public class FragmentAddItem extends Fragment {
+    private EditText edtAddress;
     private String userId;
     private ImageView ItemImageView;
     private Uri imageUri;
@@ -74,6 +83,7 @@ public class FragmentAddItem extends Fragment {
     private FrameLayout imageOverlayContainer;
     private LinearLayout carouselContainer;
     private Product editingProduct = null;
+    private ImageButton btnGetLocation;
     private final ActivityResultLauncher<Intent> imagePickerLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
@@ -116,7 +126,15 @@ public class FragmentAddItem extends Fragment {
         intent.setType("image/*");
         imagePickerLauncher.launch(intent);
     }
-
+    private FusedLocationProviderClient fusedLocationClient;
+    private final ActivityResultLauncher<String> locationPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    getCurrentLocation();
+                } else {
+                    Toast.makeText(getActivity(), "Permission denied to access location", Toast.LENGTH_SHORT).show();
+                }
+            });
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_additem, container, false);
@@ -124,11 +142,13 @@ public class FragmentAddItem extends Fragment {
         EditText editTextDescription = view.findViewById(R.id.editTextDescription);
         EditText editTextPrice = view.findViewById(R.id.editTextPrice);
         EditText editTextCategory = view.findViewById(R.id.editTextCategory);
-        EditText editTextLocation = view.findViewById(R.id.editTextLocation);
+        edtAddress = view.findViewById(R.id.editTextLocation);
         Button buttonAddItem = view.findViewById(R.id.btnPost);
         Button buttonPreview = view.findViewById(R.id.btnPreview);
         ItemImageView = view.findViewById(R.id.imageViewAddPhotos);
         imageOverlayContainer = view.findViewById(R.id.imageOverlayContainer);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
+        btnGetLocation = view.findViewById(R.id.btnGetAddress);
         ItemImageView.setOnClickListener(v -> {
             View carouselView = LayoutInflater.from(getContext()).inflate(R.layout.image_carousel, imageOverlayContainer, false);
             carouselContainer = carouselView.findViewById(R.id.layoutImageContainer);
@@ -166,7 +186,7 @@ public class FragmentAddItem extends Fragment {
                 editTextDescription.setText(editingProduct.getDescription());
                 editTextPrice.setText(String.valueOf(editingProduct.getPrice()));
                 editTextCategory.setText(editingProduct.getCategory());
-                editTextLocation.setText(editingProduct.getLocation());
+                edtAddress.setText(editingProduct.getLocation());
                 qtyPicker.setValue(editingProduct.getQuantity());
 
                 int pos = adapter.getPosition(editingProduct.getCondition());
@@ -182,13 +202,20 @@ public class FragmentAddItem extends Fragment {
                 buttonAddItem.setText("Save Edit");
             }
         }
-
+        btnGetLocation.setOnClickListener(v -> {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                getCurrentLocation();
+            } else {
+                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+        });
         buttonAddItem.setOnClickListener(v -> {
             String title = editTextTitle.getText().toString().trim();
             String description = editTextDescription.getText().toString().trim();
             String priceStr = editTextPrice.getText().toString().trim();
             String category = editTextCategory.getText().toString().trim();
-            String location = editTextLocation.getText().toString().trim();
+            String location = edtAddress.getText().toString().trim();
             int quantity = qtyPicker.getValue();
             String condition = spinnerCondition.getSelectedItem().toString();
             if (title.isEmpty() || description.isEmpty() || priceStr.isEmpty() || category.isEmpty() || location.isEmpty()) {
@@ -209,7 +236,7 @@ public class FragmentAddItem extends Fragment {
             String title = editTextTitle.getText().toString().trim();
             String description = editTextDescription.getText().toString().trim();
             String category = editTextCategory.getText().toString().trim();
-            String location = editTextLocation.getText().toString().trim();
+            String location = edtAddress.getText().toString().trim();
             String priceStr = editTextPrice.getText().toString().trim();
 
             if (title.isEmpty() || description.isEmpty() || priceStr.isEmpty() || category.isEmpty() || location.isEmpty()) {
@@ -520,6 +547,43 @@ public class FragmentAddItem extends Fragment {
                 .addOnFailureListener(e ->
                         Toast.makeText(getActivity(), "Error updating product: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
+    private void getCurrentLocation() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Nếu chưa có quyền thì không làm gì cả, hoặc hiện thông báo
+            Toast.makeText(getActivity(), "Chưa được cấp quyền vị trí", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
+
+                        // Hiển thị log (debug)
+                        Log.d("Location", "Lat: " + latitude + ", Lng: " + longitude);
+
+                        Geocoder geocoder = new Geocoder(requireContext(), Locale.getDefault());
+                        try {
+                            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+                            if (addresses != null && !addresses.isEmpty()) {
+                                String address = addresses.get(0).getAddressLine(0);
+                                edtAddress.setText(address); // Gán địa chỉ vào EditText
+                            } else {
+                                edtAddress.setText("Lat: " + latitude + ", Lng: " + longitude);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            edtAddress.setText("Lat: " + latitude + ", Lng: " + longitude);
+                        }
+                    } else {
+                        Toast.makeText(getActivity(), "Không lấy được vị trí (null)", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getActivity(), "Lỗi lấy vị trí: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
     @Override
     public void onResume() {
         super.onResume();
@@ -531,4 +595,5 @@ public class FragmentAddItem extends Fragment {
             imageUris.addAll(uniqueUris);
         }
     }
+
 }

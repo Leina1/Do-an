@@ -1,40 +1,229 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true" tools:context=".FragmentAddListing.FragmentAddItem">
-    <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/FragmentAddItem" android:layout_width="match_parent" android:layout_height="wrap_content" android:fitsSystemWindows="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/FragmentAddItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true">
         <!--  Header  -->
-        <LinearLayout android:id="@+id/headerLayout" android:layout_width="0dp" android:layout_height="56dp" android:background="#FFFFFF" android:gravity="center_vertical" android:orientation="horizontal" android:paddingStart="16dp" android:paddingEnd="16dp" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent">
-            <ImageButton android:id="@+id/btnBack" android:layout_width="24dp" android:layout_height="24dp" android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="@string/back" android:src="@drawable/ic_arrow_back"/>
-            <TextView android:id="@+id/tvHeaderTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:fontFamily="sans-serif-medium" android:text="@string/add_item_for_sale" android:textSize="20sp" android:textStyle="bold"/>
+        <LinearLayout
+            android:id="@+id/headerLayout"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:background="#FFFFFF"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/back"
+                android:src="@drawable/ic_arrow_back" />
+
+            <TextView
+                android:id="@+id/tvHeaderTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/add_item_for_sale"
+                android:textSize="20sp"
+                android:textStyle="bold" />
         </LinearLayout>
         <!--  Add Photos  -->
-        <ImageView android:id="@+id/imageViewAddPhotos" android:layout_width="189dp" android:layout_height="152dp" android:layout_marginTop="16dp" android:scaleType="centerCrop" android:src="@drawable/ic_add_photos" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/headerLayout"/>
+        <ImageView
+            android:id="@+id/imageViewAddPhotos"
+            android:layout_width="189dp"
+            android:layout_height="152dp"
+            android:layout_marginTop="16dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_add_photos"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/headerLayout" />
         <!--  Title  -->
-        <FrameLayout android:id="@+id/imageOverlayContainer" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#80000000" android:visibility="gone" android:clickable="true" android:focusable="true"> </FrameLayout>
-        <EditText android:id="@+id/editTextTitle" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_marginTop="16dp" android:layout_marginEnd="16dp" android:hint="@string/title_item" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/imageViewAddPhotos"/>
+        <FrameLayout
+            android:id="@+id/imageOverlayContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#80000000"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone"></FrameLayout>
+
+        <EditText
+            android:id="@+id/editTextTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:hint="@string/title_item"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/imageViewAddPhotos" />
         <!--  Description  -->
         <!--  Category & Condition row  -->
         <!--  Price  -->
         <!--  Location  -->
         <!--  Buttons  -->
         <!--  PRICE + VNĐ + QUANTITY ROW  -->
-        <EditText android:id="@+id/editTextDescription" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_marginTop="24dp" android:layout_marginEnd="16dp" android:gravity="top|start" android:hint="@string/description_item" android:inputType="textMultiLine" android:minLines="3" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintHorizontal_bias="0.0" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/editTextTitle"/>
-        <LinearLayout android:id="@+id/layoutCategoryCondition" android:layout_width="379dp" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:orientation="horizontal" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@+id/priceQtyRow">
-            <EditText android:id="@+id/editTextCategory" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:hint="@string/category_item"/>
-            <Spinner android:id="@+id/spinnerCondition" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:layout_weight="1" android:spinnerMode="dropdown"/>
+        <EditText
+            android:id="@+id/editTextDescription"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="16dp"
+            android:gravity="top|start"
+            android:hint="@string/description_item"
+            android:inputType="textMultiLine"
+            android:minLines="3"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/editTextTitle" />
+
+        <LinearLayout
+            android:id="@+id/layoutCategoryCondition"
+            android:layout_width="379dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/priceQtyRow">
+
+            <EditText
+                android:id="@+id/editTextCategory"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/category_item" />
+
+            <Spinner
+                android:id="@+id/spinnerCondition"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:spinnerMode="dropdown" />
         </LinearLayout>
-        <LinearLayout android:id="@+id/priceQtyRow" android:layout_width="371dp" android:layout_height="89dp" android:layout_marginStart="16dp" android:layout_marginTop="24dp" android:layout_marginEnd="16dp" android:gravity="center_vertical" android:orientation="horizontal" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintHorizontal_bias="0.0" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/editTextDescription">
+
+        <LinearLayout
+            android:id="@+id/priceQtyRow"
+            android:layout_width="371dp"
+            android:layout_height="89dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/editTextDescription">
             <!--  Price  -->
-            <EditText android:id="@+id/editTextPrice" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:hint="@string/price_item" android:inputType="numberDecimal" android:paddingEnd="8dp"/>
+            <EditText
+                android:id="@+id/editTextPrice"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/price_item"
+                android:inputType="numberDecimal"
+                android:paddingEnd="8dp" />
             <!--  VNĐ Label  -->
-            <TextView android:id="@+id/tvCurrency" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:fontFamily="sans-serif-medium" android:text="VNĐ" android:textColor="#000000" android:textSize="16sp"/>
+            <TextView
+                android:id="@+id/tvCurrency"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="VNĐ"
+                android:textColor="#000000"
+                android:textSize="16sp" />
             <!--  Qty Label  -->
-            <TextView android:id="@+id/textViewQty" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:fontFamily="sans-serif-medium" android:text="@string/qty_item" android:textColor="#000000" android:textSize="16sp"/>
+            <TextView
+                android:id="@+id/textViewQty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/qty_item"
+                android:textColor="#000000"
+                android:textSize="16sp" />
             <!--  NumberPicker  -->
-            <NumberPicker android:id="@+id/numberPickerQty" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp"/>
+            <NumberPicker
+                android:id="@+id/numberPickerQty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp" />
         </LinearLayout>
-        <EditText android:id="@+id/editTextLocation" android:layout_width="379dp" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:hint="@string/location_item" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@+id/layoutCategoryCondition"/>
-        <LinearLayout android:id="@+id/layoutButtons" android:layout_width="379dp" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:gravity="center" android:orientation="horizontal" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@+id/editTextLocation">
-            <Button android:id="@+id/btnPreview" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:backgroundTint="#CCCCCC" android:textColor="#000000" android:fontFamily="sans-serif-medium" android:text="@string/preview_item"/>
-            <Button android:id="@+id/btnPost" android:layout_width="0dp" android:layout_height="48dp" android:layout_marginStart="12dp" android:layout_weight="1" android:backgroundTint="#000000" android:fontFamily="sans-serif-medium" android:text="@string/post_item" android:textColor="#FFFFFF"/>
+
+        <EditText
+            android:id="@+id/editTextLocation"
+            android:layout_width="331dp"
+            android:layout_height="69dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:hint="@string/location_item"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutCategoryCondition" />
+
+        <ImageButton
+            android:id="@+id/btnGetAddress"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="20dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Get Address"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_location"
+            app:layout_constraintBottom_toBottomOf="@+id/editTextLocation"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/editTextLocation" />
+
+        <LinearLayout
+            android:id="@+id/layoutButtons"
+            android:layout_width="379dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/editTextLocation"
+            app:layout_constraintVertical_bias="0.333">
+
+            <Button
+                android:id="@+id/btnPreview"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:backgroundTint="#CCCCCC"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/preview_item"
+                android:textColor="#000000" />
+
+            <Button
+                android:id="@+id/btnPost"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:backgroundTint="#000000"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/post_item"
+                android:textColor="#FFFFFF" />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

@@ -1,6 +1,8 @@
 package com.example.apptradeup;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -13,6 +15,8 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.apptradeup.adapter.ImagePagerAdapter;
 import com.example.apptradeup.FragmentHome.FragmentSellerProfile;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 public class ProductDetailActivity extends AppCompatActivity {
@@ -23,8 +27,9 @@ public class ProductDetailActivity extends AppCompatActivity {
     private ImageView imgSellerAvatar;
     private TextView txtProductTitle, txtProductPrice, txtSold, txtQuatity, txtLocation, txtDescription, txtSellerName;
     private RecyclerView recyclerViewReviews;
-    private ImageButton btnBack;
+    private ImageButton btnChat, btnAddToCart, btnBack;
 
+    private Button btnBuy;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +58,9 @@ public class ProductDetailActivity extends AppCompatActivity {
         txtSellerName = findViewById(R.id.txtSellerName);
         recyclerViewReviews = findViewById(R.id.recyclerViewReviews);
         btnBack = findViewById(R.id.btnBack);
+        btnChat= findViewById(R.id.btnChat);
+        btnAddToCart = findViewById(R.id.btnAddToCart);
+        btnBuy = findViewById(R.id.btnBuyNow);
 
         btnBack.setOnClickListener(v -> finish());
 
@@ -66,6 +74,27 @@ public class ProductDetailActivity extends AppCompatActivity {
                 Toast.makeText(this, "Đang tải thông tin người bán...", Toast.LENGTH_SHORT).show();
             }
         });
+        btnAddToCart.setOnClickListener(v -> {
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                Toast.makeText(this, "Bạn chưa đăng nhập", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String userId = currentUser.getUid();
+
+            FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(userId)
+                    .update("Cart", com.google.firebase.firestore.FieldValue.arrayUnion(itemId))
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "Đã thêm sản phẩm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("AddToCart", "Lỗi khi thêm vào giỏ hàng", e);
+                        Toast.makeText(this, "Không thể thêm sản phẩm", Toast.LENGTH_SHORT).show();
+                    });
+        });
 
         // Load chi tiết sản phẩm
         loadProductDetails();
@@ -78,6 +107,8 @@ public class ProductDetailActivity extends AppCompatActivity {
                         Product product = documentSnapshot.toObject(Product.class);
                         if (product != null) {
                             // Gán dữ liệu sản phẩm vào View
+                            Log.d("ProductDetail", "Seller UserId: " + product.getUserId()); // Thêm log để kiểm tra userId
+
                             txtProductTitle.setText(product.getTitle());
                             txtProductPrice.setText(String.format("%,.0fđ", product.getPrice()));
                             txtDescription.setText(product.getDescription());

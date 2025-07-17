@@ -35,6 +35,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -205,6 +206,7 @@ public class LoginFragment extends Fragment {
         newUser.put("rating_avg", 0);
         newUser.put("created_at", System.currentTimeMillis());
         newUser.put("last_active", System.currentTimeMillis());
+        newUser.put("Cart", new ArrayList<String>());
 
         userRef.set(newUser)
                 .addOnSuccessListener(aVoid -> {

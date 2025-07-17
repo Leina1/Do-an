@@ -19,7 +19,33 @@
             <TextView android:id="@+id/tvPhone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/phone_label" android:textSize="14sp" android:layout_marginBottom="8dp"/>
             <EditText android:id="@+id/edtPhone" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_phone" android:textSize="14sp" android:layout_marginBottom="16dp"/>
             <TextView android:id="@+id/tvAddress" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/address_label" android:textSize="14sp" android:layout_marginBottom="8dp"/>
-            <EditText android:id="@+id/edtAddress" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/hint_address" android:textSize="14sp" android:layout_marginBottom="16dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="1">
+
+                <EditText
+                    android:id="@+id/edtAddress"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/hint_address"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="16dp"/>
+
+                <!-- Nút nhỏ hình tròn để lấy địa chỉ -->
+                <ImageButton
+                    android:id="@+id/btnGetAddress"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/ic_location"
+                    android:contentDescription="Get Address"
+                    android:background="@android:color/transparent"
+                    android:scaleType="centerInside" />
+            </LinearLayout>
             <Button android:id="@+id/btnSave" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/save_changes_button" android:layout_marginTop="20dp" android:layout_gravity="center"/>
         </LinearLayout>
     </ScrollView>

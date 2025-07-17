@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Header Section -->
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="#FFFFFF"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <!-- Back Button -->
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/back"
+            android:src="@drawable/ic_arrow_back" />
+
+        <!-- Header Title -->
+        <TextView
+            android:id="@+id/tvHeaderTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/Cart"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- RecyclerView to display the cart items -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewCart"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Bottom Section for Total Price and Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:gravity="center_vertical"
+        android:background="?android:attr/colorBackground">
+
+        <!-- Checkbox for selecting all items -->
+        <CheckBox
+            android:id="@+id/checkBoxSelectAll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chọn tất cả"
+            android:layout_marginEnd="16dp"/>
+
+        <!-- TextView displaying the total price -->
+        <TextView
+            android:id="@+id/txtTotalPrice"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Tổng tiền: 0 đ"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:gravity="end"
+            android:paddingEnd="16dp"/>
+
+        <!-- Button to proceed to buy -->
+        <Button
+            android:id="@+id/btnMua"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mua"
+            android:backgroundTint="@color/black"
+            android:textColor="#FFFFFF"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"/>
+    </LinearLayout>
+
+</LinearLayout>

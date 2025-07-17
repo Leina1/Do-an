@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -108,6 +109,7 @@ public class RegisterFragment extends Fragment {
         userMap.put("verified", false); // Đánh dấu người dùng chưa xác minh (sẽ thay đổi sau khi xác minh email)
         userMap.put("phone", "");
         userMap.put("Gender", "");
+        userMap.put("Cart", new ArrayList<String>());
         db.collection("users").document(userId)
                 .set(userMap)
                 .addOnSuccessListener(aVoid -> {
@@ -115,6 +117,7 @@ public class RegisterFragment extends Fragment {
                     Toast.makeText(getActivity(), "Tạo tài khoản thành công!", Toast.LENGTH_SHORT).show();
                     // Gửi email xác minh
                     sendVerificationEmail(user);
+
                 })
                 .addOnFailureListener(e -> {
                     // Lỗi khi lưu dữ liệu
