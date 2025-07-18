@@ -1,5 +1,6 @@
 package com.example.apptradeup.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,6 +8,7 @@ import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.apptradeup.Product;
 import com.example.apptradeup.R;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,17 +31,29 @@ public class ItemCartAdapter extends RecyclerView.Adapter<ItemCartAdapter.CartVi
     private HashSet<String> selectedIds = new HashSet<>();
 
     private OnProductSelectListener listener;
-
+    private String userId; // user ID hiện tại
+    private FirebaseFirestore db;
+    private Context context;
+    private boolean isReadOnly = false;
     public interface OnProductSelectListener {
         void onProductSelectionChanged();
     }
 
-    public ItemCartAdapter(List<Product> cartList, OnProductSelectListener listener) {
+    public ItemCartAdapter(Context context, List<Product> cartList, OnProductSelectListener listener, String userId, boolean isReadOnly, Map<String, Integer> externalQuantities) {
         this.cartList = cartList;
         this.listener = listener;
+        this.context = context;
+        this.userId = userId;
+        this.isReadOnly = isReadOnly;
+        this.db = FirebaseFirestore.getInstance();
 
-        for (Product product : cartList) {
-            quantities.put(product.getId(), 1); // Mặc định mỗi sản phẩm có số lượng là 1
+        // ✅ Nếu có quantities được truyền từ bên ngoài → dùng
+        if (externalQuantities != null) {
+            this.quantities = new HashMap<>(externalQuantities);
+        } else {
+            for (Product product : cartList) {
+                quantities.put(product.getId(), 1);
+            }
         }
     }
 
@@ -54,7 +69,7 @@ public class ItemCartAdapter extends RecyclerView.Adapter<ItemCartAdapter.CartVi
     public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
         Product product = cartList.get(position);
         String productId = product.getId();
-        int quantity = quantities.get(productId);
+        int quantity = quantities.containsKey(productId) ? quantities.get(productId) : 1;
         double totalPrice = product.getPrice() * quantity;
 
         holder.txtTitle.setText(product.getTitle());
@@ -67,38 +82,69 @@ public class ItemCartAdapter extends RecyclerView.Adapter<ItemCartAdapter.CartVi
                         : R.drawable.ic_launcher_background)
                 .into(holder.imgProduct);
 
-        // Gán lại checkbox đúng trạng thái
-        holder.checkBox.setOnCheckedChangeListener(null); // tránh callback khi setChecked
-        holder.checkBox.setChecked(selectedIds.contains(productId));
+        if (isReadOnly) {
+            holder.txtQuantity.setText("Qty: " + quantity);
+            holder.checkBox.setVisibility(View.GONE);
+            holder.btnIncrease.setVisibility(View.GONE);
+            holder.btnDecrease.setVisibility(View.GONE);
+            holder.btnRemove.setVisibility(View.GONE);
+        } else {
+            // Checkbox xử lý lựa chọn
+            holder.checkBox.setOnCheckedChangeListener(null);
+            holder.checkBox.setChecked(selectedIds.contains(productId));
 
-        holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                selectedIds.add(productId);
-            } else {
-                selectedIds.remove(productId);
-            }
-            if (listener != null) {
-                listener.onProductSelectionChanged();
-            }
-        });
+            holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isChecked) {
+                    selectedIds.add(productId);
+                } else {
+                    selectedIds.remove(productId);
+                }
+                if (listener != null) {
+                    listener.onProductSelectionChanged();
+                }
+            });
 
-        holder.btnIncrease.setOnClickListener(v -> {
-            quantities.put(productId, quantity + 1);
-            notifyItemChanged(position);
-            if (listener != null && selectedIds.contains(productId)) {
-                listener.onProductSelectionChanged();
-            }
-        });
-
-        holder.btnDecrease.setOnClickListener(v -> {
-            if (quantity > 1) {
-                quantities.put(productId, quantity - 1);
+            // Xử lý tăng/giảm số lượng
+            holder.btnIncrease.setOnClickListener(v -> {
+                quantities.put(productId, quantity + 1);
                 notifyItemChanged(position);
                 if (listener != null && selectedIds.contains(productId)) {
                     listener.onProductSelectionChanged();
                 }
-            }
-        });
+            });
+
+            holder.btnDecrease.setOnClickListener(v -> {
+                if (quantity > 1) {
+                    quantities.put(productId, quantity - 1);
+                    notifyItemChanged(position);
+                    if (listener != null && selectedIds.contains(productId)) {
+                        listener.onProductSelectionChanged();
+                    }
+                }
+            });
+
+            // Xoá sản phẩm khỏi giỏ
+            holder.btnRemove.setOnClickListener(v -> {
+                db.collection("users").document(userId)
+                        .get()
+                        .addOnSuccessListener(documentSnapshot -> {
+                            List<String> cart = (List<String>) documentSnapshot.get("Cart");
+                            if (cart != null && product.getId() != null && cart.remove(product.getId())) {
+                                db.collection("users").document(userId)
+                                        .update("Cart", cart)
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(context, "Đã xóa khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
+                                            cartList.remove(position);
+                                            notifyItemRemoved(position);
+                                            if (listener != null) listener.onProductSelectionChanged();
+                                        })
+                                        .addOnFailureListener(e ->
+                                                Toast.makeText(context, "Lỗi khi xóa sản phẩm", Toast.LENGTH_SHORT).show()
+                                        );
+                            }
+                        });
+            });
+        }
     }
 
     @Override
@@ -138,9 +184,9 @@ public class ItemCartAdapter extends RecyclerView.Adapter<ItemCartAdapter.CartVi
 
     // Lấy số lượng sản phẩm đã chọn (dùng trong tính tổng)
     public int getQuantityFor(String productId) {
-        return quantities.get(productId);
+        Integer q = quantities.get(productId);
+        return q != null ? q : 1;
     }
-
     // Trả về tất cả quantity
     public Map<String, Integer> getQuantities() {
         return quantities;

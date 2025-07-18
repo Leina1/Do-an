@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.apptradeup.ChatListActivity;
 import com.example.apptradeup.adapter.ProductAdapter;
 import com.example.apptradeup.Product;
 import com.example.apptradeup.R;
@@ -34,7 +35,7 @@ public class HomeFragment extends Fragment {
     private FirebaseFirestore db;
     private GridLayoutManager layoutManager;
     private EditText searchEditText;
-    private ImageButton btnCart;
+    private ImageButton btnCart,btnChat;
     private String userId;
 
     public HomeFragment() {}
@@ -46,6 +47,7 @@ public class HomeFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerViewProducts);
         searchEditText = view.findViewById(R.id.searchEditText);
         btnCart = view.findViewById(R.id.btnCart);
+        btnChat = view.findViewById(R.id.btnChat);
 
         userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
@@ -82,6 +84,9 @@ public class HomeFragment extends Fragment {
             Intent intent = new Intent(getContext(), CartActivity.class);
             intent.putExtra("userId", userId);
             startActivity(intent);
+        });
+        btnChat.setOnClickListener(v -> {
+            startActivity(new Intent(getContext(), ChatListActivity.class));
         });
         return view;
     }

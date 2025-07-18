@@ -1,6 +1,8 @@
 package com.example.apptradeup;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -14,9 +16,11 @@ import com.example.apptradeup.adapter.ItemCartAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class CartActivity extends AppCompatActivity {
 
@@ -28,6 +32,7 @@ public class CartActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private ImageButton btnBack;
     private CheckBox checkBoxSelectAll;
+    private Button btnBuy;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +43,7 @@ public class CartActivity extends AppCompatActivity {
         totalPriceTextView = findViewById(R.id.txtTotalPrice);
         btnBack = findViewById(R.id.btnBack);
         checkBoxSelectAll = findViewById(R.id.checkBoxSelectAll);
+        btnBuy = findViewById(R.id.btnBuy);
 
         recyclerViewCart.setLayoutManager(new LinearLayoutManager(this));
 
@@ -50,6 +56,22 @@ public class CartActivity extends AppCompatActivity {
                 adapter.selectAll(checked);  // gọi hàm trong adapter
             }
             calculateTotal();  // cập nhật tổng tiền
+        });
+        btnBuy.setOnClickListener(v -> {
+            List<Product> selectedProducts = adapter.getSelectedProducts();  // adapter là instance của ItemCartAdapter
+            Map<String, Integer> quantities = adapter.getQuantities();
+
+            if (selectedProducts.isEmpty()) {
+                Toast.makeText(CartActivity.this, "Vui lòng chọn ít nhất một sản phẩm", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            String userId = mAuth.getCurrentUser().getUid();
+
+            Intent intent = new Intent(CartActivity.this, CheckoutActivity.class);
+            intent.putExtra("selectedProducts", new Gson().toJson(selectedProducts));
+            intent.putExtra("quantities", new Gson().toJson(quantities));
+            intent.putExtra("userId", userId);  // truyền thêm userId
+            startActivity(intent);
         });
         loadCartItems();
     }
@@ -65,9 +87,8 @@ public class CartActivity extends AppCompatActivity {
                         Toast.makeText(this, "Giỏ hàng trống", Toast.LENGTH_SHORT).show();
                         return;
                     }
-
                     productList.clear();
-
+                    final int[] loadedCount = {0}; // Biến đếm số sản phẩm đã load
                     for (String productId : cart) {
                         db.collection("items").document(productId).get()
                                 .addOnSuccessListener(productSnapshot -> {
@@ -75,11 +96,19 @@ public class CartActivity extends AppCompatActivity {
                                         Product product = productSnapshot.toObject(Product.class);
                                         product.setId(productSnapshot.getId());
                                         productList.add(product);
-
-                                        // Cập nhật RecyclerView
-                                        adapter = new ItemCartAdapter(productList, () -> calculateTotal());
+                                    }
+                                    loadedCount[0]++;
+                                    // Khi đã load đủ số lượng product trong cart
+                                    if (loadedCount[0] == cart.size()) {
+                                        adapter = new ItemCartAdapter(
+                                                CartActivity.this,
+                                                productList,
+                                                () -> calculateTotal(),
+                                                userId,
+                                                false,
+                                                null
+                                        );
                                         recyclerViewCart.setAdapter(adapter);
-
                                         calculateTotal();
                                     }
                                 });

@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_block"
+        android:title="Chặn người này"
+        android:icon="@drawable/ic_block"/>
+    <item
+        android:id="@+id/action_report"
+        android:title="Báo cáo hội thoại" />
+</menu>

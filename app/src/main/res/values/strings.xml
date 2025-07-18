@@ -62,5 +62,8 @@
         <string name="product_image">Hình ảnh sản phẩm</string>
         <string name="decrease_quantity">Giảm số lượng</string>
         <string name="increase_quantity">Tăng số lượng</string>
-
+    <string name="recipient_info">Thông tin người nhận</string>
+    <string name="user_name">Tên: Nguyễn Văn A</string>
+    <string name="user_phone">SĐT: 0123456789</string>
+    <string name="user_address">Địa chỉ: 123 Đường ABC, TP.HCM</string>
 </resources>

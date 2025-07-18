@@ -31,6 +31,17 @@
         <activity android:name=".MainActivity"/>
         <activity android:name=".ProductDetailActivity"/>
         <activity android:name=".CartActivity"/>
+        <activity android:name=".CheckoutActivity"/>
+        <activity android:name=".SellerProfileActivity"/>
+        <activity android:name=".ChatActivity"/>
+        <activity android:name=".ChatListActivity"/>
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

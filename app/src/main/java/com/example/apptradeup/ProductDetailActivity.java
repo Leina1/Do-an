@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.apptradeup.adapter.ImagePagerAdapter;
-import com.example.apptradeup.FragmentHome.FragmentSellerProfile;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -66,8 +65,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         imgSellerAvatar.setOnClickListener(v -> {
             if (sellerId != null) {
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.putExtra("openSellerProfile", true);
+                Intent intent = new Intent(this, SellerProfileActivity.class);
                 intent.putExtra("sellerId", sellerId);
                 startActivity(intent);
             } else {
@@ -93,6 +91,41 @@ public class ProductDetailActivity extends AppCompatActivity {
                     .addOnFailureListener(e -> {
                         Log.e("AddToCart", "Lỗi khi thêm vào giỏ hàng", e);
                         Toast.makeText(this, "Không thể thêm sản phẩm", Toast.LENGTH_SHORT).show();
+                    });
+        });
+        btnBuy.setOnClickListener(v -> {
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                Toast.makeText(this, "Bạn chưa đăng nhập", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Load sản phẩm (đảm bảo dữ liệu đã load)
+            db.collection("items").document(itemId).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            Product product = documentSnapshot.toObject(Product.class);
+                            if (product != null) {
+                                product.setId(itemId); // Đảm bảo có id
+                                // Tạo list sản phẩm
+                                java.util.List<Product> productList = new java.util.ArrayList<>();
+                                productList.add(product);
+                                // Số lượng mặc định 1
+                                java.util.Map<String, Integer> quantities = new java.util.HashMap<>();
+                                quantities.put(itemId, 1);
+
+                                Intent intent = new Intent(ProductDetailActivity.this, CheckoutActivity.class);
+                                intent.putExtra("selectedProducts", new com.google.gson.Gson().toJson(productList));
+                                intent.putExtra("quantities", new com.google.gson.Gson().toJson(quantities));
+                                intent.putExtra("userId", currentUser.getUid());
+                                startActivity(intent);
+                            }
+                        } else {
+                            Toast.makeText(this, "Không tìm thấy sản phẩm", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Lỗi tải dữ liệu sản phẩm", Toast.LENGTH_SHORT).show();
                     });
         });
 

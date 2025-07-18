@@ -42,6 +42,7 @@ dependencies {
     implementation("com.google.firebase:firebase-core:21.0.0")
     implementation("com.google.firebase:firebase-firestore:24.0.0")
     implementation("com.google.firebase:firebase-analytics")
+    implementation ("com.google.firebase:firebase-messaging:23.0.8")
 
 
 
@@ -67,6 +68,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.0.1")
 
     implementation ("org.osmdroid:osmdroid-android:6.1.11")
+
+    implementation ("com.google.code.gson:gson:2.10.1")
     // Dependencies cho test
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
