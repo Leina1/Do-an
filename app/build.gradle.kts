@@ -70,8 +70,14 @@ dependencies {
     implementation ("org.osmdroid:osmdroid-android:6.1.11")
 
     implementation ("com.google.code.gson:gson:2.10.1")
+    implementation(fileTree(mapOf(
+        "dir" to "H:\\AndroiStudiod\\ZaloPayLib",
+        "include" to listOf("*.aar", "*.jar"),
+        "exclude" to listOf("")
+    )))
     // Dependencies cho test
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    implementation("commons-codec:commons-codec:1.14")
 }

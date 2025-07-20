@@ -31,10 +31,25 @@
         <activity android:name=".MainActivity"/>
         <activity android:name=".ProductDetailActivity"/>
         <activity android:name=".CartActivity"/>
-        <activity android:name=".CheckoutActivity"/>
+        <activity android:name=".CheckoutActivity"
+            android:exported="true"
+            android:label="Merchant Demo"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="app"
+                    android:scheme="demozpdk" />
+            </intent-filter>
+        </activity>
         <activity android:name=".SellerProfileActivity"/>
         <activity android:name=".ChatActivity"/>
         <activity android:name=".ChatListActivity"/>
+        <activity android:name=".PaymentNotification"/>
         <service
             android:name=".MyFirebaseMessagingService"
             android:exported="false">

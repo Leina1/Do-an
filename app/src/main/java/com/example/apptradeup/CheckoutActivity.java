@@ -2,6 +2,7 @@ package com.example.apptradeup;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.widget.*;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,6 +16,15 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.*;
+
+import com.example.apptradeup.Api.CreateOrder;
+
+import org.json.JSONObject;
+
+import vn.zalopay.sdk.Environment;
+import vn.zalopay.sdk.ZaloPayError;
+import vn.zalopay.sdk.ZaloPaySDK;
+import vn.zalopay.sdk.listeners.PayOrderListener;
 
 public class CheckoutActivity extends AppCompatActivity {
 
@@ -48,6 +58,14 @@ public class CheckoutActivity extends AppCompatActivity {
         txtShippingCost= findViewById(R.id.tvShippingCost);
         txtDiscount = findViewById(R.id.tvDiscount);
         txtTotalAmount= findViewById(R.id.tvTotalAmount);
+
+        StrictMode.ThreadPolicy policy = new
+                StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
+        // ZaloPay SDK Init
+        ZaloPaySDK.init(2553, Environment.SANDBOX);
+
 
         // Nhận dữ liệu từ Intent
         Intent intent = getIntent();
@@ -83,6 +101,7 @@ public class CheckoutActivity extends AppCompatActivity {
         // Tính tổng tiền phải thanh toán
         totalAmount = totalPrice + shippingCost - discount;
         txtTotalAmount.setText(String.format("%,.0f đ", totalAmount));
+        String totalAmountString = String.format("%.0f", totalAmount);
 
         // Lấy thông tin người dùng từ Firestore
         FirebaseFirestore.getInstance().collection("users")
@@ -100,13 +119,63 @@ public class CheckoutActivity extends AppCompatActivity {
         radioGroupPayment.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.radioCash) {
                 selectedPaymentMethod = "Tiền mặt";
+                // Khi chọn Tiền mặt, thông báo và sẽ gọi placeOrder() khi nhấn Đặt hàng
+                Toast.makeText(this, "Chọn thanh toán bằng Tiền mặt", Toast.LENGTH_SHORT).show();
             } else if (checkedId == R.id.radioBank) {
                 selectedPaymentMethod = "Chuyển khoản";
+                // Khi chọn Chuyển khoản, thông báo và tạo mã QR khi nhấn Đặt hàng
+                Toast.makeText(this, "Chọn thanh toán bằng Chuyển khoản", Toast.LENGTH_SHORT).show();
             }
         });
 
         // Xử lý đặt hàng
-        btnPlaceOrder.setOnClickListener(v -> placeOrder());
+        btnPlaceOrder.setOnClickListener(v -> {
+            if ("Tiền mặt".equals(selectedPaymentMethod)) {
+                // Nếu chọn Tiền mặt, gọi hàm placeOrder() để lưu đơn hàng vào Firestore
+                placeOrder();
+            } else if ("Chuyển khoản".equals(selectedPaymentMethod)) {
+                // Nếu chọn Chuyển khoản, tạo mã QR cho thanh toán chuyển khoản
+                CreateOrder orderApi = new CreateOrder();
+                try {
+                    JSONObject data = orderApi.createOrder(totalAmountString);
+                    String code = data.getString("return_code");
+                    if (code.equals("1")) {
+                        String token = data.getString("zp_trans_token");
+                        ZaloPaySDK.getInstance().payOrder(CheckoutActivity.this, token, "demozpdk://app", new PayOrderListener() {
+                            @Override
+                            public void onPaymentSucceeded(String s, String s1, String s2) {
+                                Intent intent1 = new Intent(CheckoutActivity.this, PaymentNotification.class);
+                                intent1.putExtra("result", "Thanh toán thành công");
+                                startActivity(intent1);
+                            }
+
+                            @Override
+                            public void onPaymentCanceled(String s, String s1) {
+                                Intent intent1 = new Intent(CheckoutActivity.this, PaymentNotification.class);
+                                intent1.putExtra("result", "Hủy thanh toán");
+                                startActivity(intent1);
+                            }
+
+                            @Override
+                            public void onPaymentError(ZaloPayError zaloPayError, String s, String s1) {
+                                Intent intent1 = new Intent(CheckoutActivity.this, PaymentNotification.class);
+                                intent1.putExtra("result", "Lỗi thanh toán");
+                                startActivity(intent1);
+                            }
+                        });
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+    }
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        ZaloPaySDK.getInstance().onResult(intent);
     }
 
     private void placeOrder() {
