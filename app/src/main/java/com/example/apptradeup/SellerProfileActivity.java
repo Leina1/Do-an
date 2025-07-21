@@ -145,7 +145,7 @@ public class SellerProfileActivity extends AppCompatActivity {
                         if (rating != null) {
                             txtRating.setText("\u2B50 " + String.format("%.1f", rating));
                         } else {
-                            txtRating.setText("\u2B50 Chưa có đánh giá");
+                            txtRating.setText("\u2B50 0.0");
                         }
                     }
                 })
@@ -192,6 +192,7 @@ public class SellerProfileActivity extends AppCompatActivity {
                     Toast.makeText(this, "Lỗi tải sản phẩm", Toast.LENGTH_SHORT).show();
                 });
     }
+
     private void openChatActivity(String chatId, String otherUserId) {
         Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra("chatId", chatId);

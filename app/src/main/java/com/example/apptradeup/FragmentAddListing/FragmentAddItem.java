@@ -84,6 +84,8 @@ public class FragmentAddItem extends Fragment {
     private LinearLayout carouselContainer;
     private Product editingProduct = null;
     private ImageButton btnGetLocation;
+    private double selectedLat = 0.0;
+    private double selectedLng = 0.0;
     private final ActivityResultLauncher<Intent> imagePickerLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
@@ -202,6 +204,28 @@ public class FragmentAddItem extends Fragment {
                 buttonAddItem.setText("Save Edit");
             }
         }
+        getParentFragmentManager().setFragmentResultListener("location_result", this, (requestKey, bundle) -> {
+            String address = bundle.getString("address");
+            double lat = bundle.getDouble("lat", 0.0);
+            double lng = bundle.getDouble("lng", 0.0);
+            Log.d("FragmentAddItem", "Đã nhận địa chỉ: " + address + " | lat: " + lat + ", lng: " + lng);
+
+            if (address != null && !address.isEmpty()) {
+                edtAddress.setText(address);
+                // Lưu lại lat/lng vừa lấy vào biến instance
+                this.selectedLat = lat;
+                this.selectedLng = lng;
+            }
+        });
+
+        edtAddress.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, new com.example.apptradeup.Fragment.PickLocationFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
+
         btnGetLocation.setOnClickListener(v -> {
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
@@ -232,6 +256,7 @@ public class FragmentAddItem extends Fragment {
 
             }
         });
+
         buttonPreview.setOnClickListener(v -> {
             String title = editTextTitle.getText().toString().trim();
             String description = editTextDescription.getText().toString().trim();
@@ -265,6 +290,9 @@ public class FragmentAddItem extends Fragment {
             bundle.putString("condition", spinnerCondition.getSelectedItem().toString());
             bundle.putDouble("price", price);
             bundle.putInt("quantity", qtyPicker.getValue());
+            bundle.putDouble("lat", selectedLat);
+            bundle.putDouble("lng", selectedLng);
+
 
             ArrayList<String> uriStrings = new ArrayList<>();
             for (Uri uri : new ArrayList<>(imageUris)) {  // clone lại list trước khi lặp

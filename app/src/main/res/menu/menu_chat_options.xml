@@ -5,5 +5,5 @@
         android:icon="@drawable/ic_block"/>
     <item
         android:id="@+id/action_report"
-        android:title="Báo cáo hội thoại" />
+        android:title="Báo cáo người dùng" />
 </menu>

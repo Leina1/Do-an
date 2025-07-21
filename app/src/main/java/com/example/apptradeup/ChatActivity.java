@@ -18,7 +18,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.*;
 import com.squareup.picasso.Picasso;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ChatActivity extends AppCompatActivity {
@@ -31,9 +30,6 @@ public class ChatActivity extends AppCompatActivity {
     private ImageView AvatarHeader;
     private TextView txtNameHeader;
 
-    // Có thể truyền avatarUrl của đối phương vào nếu muốn hiển thị avatar cho tin nhắn nhận
-    // private String otherUserAvatarUrl;
-
     private FirebaseFirestore db;
 
     @Override
@@ -41,7 +37,6 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        // Lấy chatId và otherUserId từ Intent
         chatId = getIntent().getStringExtra("chatId");
         otherUserId = getIntent().getStringExtra("otherUserId");
         currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -49,17 +44,95 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerViewMessages);
         edtMessage = findViewById(R.id.edtMessage);
         btnSend = findViewById(R.id.btnSend);
-        AvatarHeader = findViewById(R.id.imgAvatar); // Nếu bạn có ImageView cho avatar
-        txtNameHeader = findViewById(R.id.txtUserName); // Nếu bạn có TextView cho tên người chat
+        AvatarHeader = findViewById(R.id.imgAvatar);
+        txtNameHeader = findViewById(R.id.txtUserName);
 
         db = FirebaseFirestore.getInstance();
 
-        // Khởi tạo Adapter (truyền avatarUrl nếu cần)
         adapter = new ChatMessageAdapter(messageList, currentUserId);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-        // Lắng nghe tin nhắn realtime (order theo thời gian tăng dần)
+        // Chỉ kiểm tra block, khi xong mới load tin nhắn
+        checkBlockStatus();
+
+        btnSend.setOnClickListener(v -> {
+            if (!edtMessage.isEnabled()) return;
+            String content = edtMessage.getText().toString().trim();
+            if (TextUtils.isEmpty(content)) return;
+
+            Message msg = new Message(currentUserId, content, System.currentTimeMillis());
+
+            db.collection("chats").document(chatId)
+                    .collection("messages")
+                    .add(msg)
+                    .addOnSuccessListener(ref -> {
+                        edtMessage.setText("");
+                        db.collection("chats").document(chatId)
+                                .update("lastMessage", content,
+                                        "lastTimestamp", System.currentTimeMillis());
+                    })
+                    .addOnFailureListener(e -> Toast.makeText(this, "Lỗi gửi tin nhắn", Toast.LENGTH_SHORT).show());
+        });
+
+        loadUserInfo(otherUserId);
+    }
+
+    // 1. Kiểm tra trạng thái block (đọc collection "blocks" tìm cặp bị chặn)
+    private void checkBlockStatus() {
+        db.collection("blocks")
+                .whereIn("blockerId", Arrays.asList(currentUserId, otherUserId))
+                .whereIn("blockedId", Arrays.asList(currentUserId, otherUserId))
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    boolean iBlocked = false;
+                    boolean iAmBlocked = false;
+                    for (DocumentSnapshot doc : querySnapshot) {
+                        String blockerId = doc.getString("blockerId");
+                        String blockedId = doc.getString("blockedId");
+                        if (blockerId == null || blockedId == null) continue;
+                        // Mình là người chặn
+                        if (blockerId.equals(currentUserId) && blockedId.equals(otherUserId)) {
+                            iBlocked = true;
+                        }
+                        // Mình là người bị chặn
+                        if (blockerId.equals(otherUserId) && blockedId.equals(currentUserId)) {
+                            iAmBlocked = true;
+                        }
+                    }
+                    handleBlockUI(iBlocked, iAmBlocked);
+                })
+                .addOnFailureListener(e -> {
+                    // Nếu không check được thì tạm thời cho chat
+                    handleBlockUI(false, false);
+                });
+    }
+
+    // 2. Xử lý UI tuỳ theo trạng thái block
+    private void handleBlockUI(boolean iBlocked, boolean iAmBlocked) {
+        if (iBlocked && iAmBlocked) {
+            Toast.makeText(this, "Cả hai đã chặn nhau. Không thể trò chuyện.", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+        if (iAmBlocked) {
+            edtMessage.setEnabled(false);
+            edtMessage.setHint("Bạn đã bị chặn, không thể nhắn tin.");
+            btnSend.setEnabled(false);
+        } else if (iBlocked) {
+            edtMessage.setEnabled(false);
+            edtMessage.setHint("Bạn đã chặn người này.");
+            btnSend.setEnabled(false);
+        } else {
+            edtMessage.setEnabled(true);
+            edtMessage.setHint("Nhập tin nhắn...");
+            btnSend.setEnabled(true);
+        }
+        // Cho đọc lịch sử chat (nếu muốn block là không đọc luôn thì bỏ gọi loadMessagesRealtime dưới)
+        loadMessagesRealtime();
+    }
+
+    private void loadMessagesRealtime() {
         db.collection("chats").document(chatId)
                 .collection("messages")
                 .orderBy("timestamp", Query.Direction.ASCENDING)
@@ -71,66 +144,28 @@ public class ChatActivity extends AppCompatActivity {
                         messageList.add(msg);
                     }
                     adapter.notifyDataSetChanged();
-                    recyclerView.scrollToPosition(messageList.size() - 1);
+                    recyclerView.scrollToPosition(Math.max(0, messageList.size() - 1));
                 });
-
-        // Gửi tin nhắn
-        btnSend.setOnClickListener(v -> {
-            String content = edtMessage.getText().toString().trim();
-            if (TextUtils.isEmpty(content)) return;
-
-            Message msg = new Message(currentUserId, content, System.currentTimeMillis());
-
-            db.collection("chats").document(chatId)
-                    .collection("messages")
-                    .add(msg)
-                    .addOnSuccessListener(ref -> {
-                        edtMessage.setText("");
-                        // Cập nhật lastMessage cho chat
-                        db.collection("chats").document(chatId)
-                                .update("lastMessage", content,
-                                        "lastTimestamp", System.currentTimeMillis());
-                    })
-                    .addOnFailureListener(e -> Toast.makeText(this, "Lỗi gửi tin nhắn", Toast.LENGTH_SHORT).show());
-        });
-
-        // (Tuỳ chọn) Có thể load avatar, tên đối phương lên header nếu cần
-        // Nếu bạn có TextView tên và ImageView avatar trên header thì:
-         loadUserInfo(otherUserId);
     }
 
-    // Nếu bạn cần load avatar, tên lên header:
-     private void loadUserInfo(String userId) {
-         db.collection("users").document(userId).get()
-                 .addOnSuccessListener(doc -> {
-                     if (doc.exists()) {
-                         String displayName = doc.getString("display_name");
-                         String avatarUrl = doc.getString("profile_pic_url");
+    // Hàm load avatar, tên lên header
+    private void loadUserInfo(String userId) {
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        String displayName = doc.getString("display_name");
+                        String avatarUrl = doc.getString("profile_pic_url");
+                        if (displayName != null) txtNameHeader.setText(displayName);
 
-                         // Set tên
-                         if (displayName != null) {
-                             txtNameHeader.setText(displayName);
-                         }
-
-                         // Set avatar
-                         if (avatarUrl != null && !avatarUrl.isEmpty()) {
-                             // Dùng Picasso:
-                             Picasso.get().load(avatarUrl)
-                                     .placeholder(R.drawable.ic_profile) // Ảnh tạm khi loading
-                                     .error(R.drawable.ic_profile)       // Ảnh khi lỗi
-                                     .into(AvatarHeader);
-
-                             // Hoặc dùng Glide:
-                             // Glide.with(this).load(avatarUrl)
-                             //      .placeholder(R.drawable.ic_profile)
-                             //      .into(AvatarHeader);
-                         } else {
-                             AvatarHeader.setImageResource(R.drawable.ic_profile);
-                         }
-                     }
-                 })
-                 .addOnFailureListener(e -> {
-                     // Có thể thông báo lỗi nếu cần
-                 });
-     }
+                        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                            Picasso.get().load(avatarUrl)
+                                    .placeholder(R.drawable.ic_profile)
+                                    .error(R.drawable.ic_profile)
+                                    .into(AvatarHeader);
+                        } else {
+                            AvatarHeader.setImageResource(R.drawable.ic_profile);
+                        }
+                    }
+                });
+    }
 }

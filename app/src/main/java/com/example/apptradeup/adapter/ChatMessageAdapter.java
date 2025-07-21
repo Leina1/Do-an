@@ -32,14 +32,9 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
     @NonNull
     @Override
     public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view;
-        if (viewType == 1) {
-            view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_message_sent, parent, false);
-        } else {
-            view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_message_received, parent, false);
-        }
+        // viewType == 1: gửi, viewType == 0: nhận
+        int layout = (viewType == 1) ? R.layout.item_message_sent : R.layout.item_message_received;
+        View view = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
         return new MessageViewHolder(view);
     }
 
@@ -48,7 +43,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
         Message msg = messages.get(position);
         holder.txtMessage.setText(msg.getContent());
 
-        // Hiển thị giờ (nếu có trường timestamp)
+        // Hiển thị giờ gửi tin nhắn
         if (holder.txtTime != null && msg.getTimestamp() > 0) {
             String time = new SimpleDateFormat("HH:mm", Locale.getDefault())
                     .format(new Date(msg.getTimestamp()));
@@ -58,7 +53,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
 
     @Override
     public int getItemCount() {
-        return messages.size();
+        return messages != null ? messages.size() : 0;
     }
 
     static class MessageViewHolder extends RecyclerView.ViewHolder {
@@ -67,7 +62,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
         MessageViewHolder(View itemView) {
             super(itemView);
             txtMessage = itemView.findViewById(R.id.txtMessage);
-            txtTime = itemView.findViewById(R.id.txtTime); // nhớ đặt id này trong cả 2 layout!
+            txtTime = itemView.findViewById(R.id.txtTime); // Đảm bảo có trong cả 2 layout
         }
     }
 }

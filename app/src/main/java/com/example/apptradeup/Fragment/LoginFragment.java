@@ -17,14 +17,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.apptradeup.admin.HomeAdminActivity;
 import com.example.apptradeup.MainActivity;
 import com.example.apptradeup.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -125,8 +124,11 @@ public class LoginFragment extends Fragment {
 
     private void signInWithGoogle() {
         try {
-            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-            googleSignInLauncher.launch(signInIntent);
+            // Đảm bảo luôn hiện dialog chọn account (không silent)
+            mGoogleSignInClient.signOut().addOnCompleteListener(requireActivity(), task -> {
+                Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+                googleSignInLauncher.launch(signInIntent);
+            });
         } catch (Exception e) {
             Log.e(TAG, "Lỗi khởi tạo Google Sign-In: " + e.getMessage());
             Toast.makeText(requireContext(), "Lỗi hệ thống", Toast.LENGTH_SHORT).show();
@@ -182,7 +184,7 @@ public class LoginFragment extends Fragment {
                     createNewUserDocument(userRef, user);
                 } else {
                     // Người dùng đã tồn tại - chuyển đến MainActivity
-                    navigateToMainActivity(uid);
+                    navigateAfterLogin(uid);
                 }
             } else {
                 Log.w(TAG, "Kiểm tra người dùng trong Firestore thất bại", task.getException());
@@ -207,11 +209,13 @@ public class LoginFragment extends Fragment {
         newUser.put("created_at", System.currentTimeMillis());
         newUser.put("last_active", System.currentTimeMillis());
         newUser.put("Cart", new ArrayList<String>());
+        newUser.put("role", "user");
+        newUser.put("banned", "false ");
 
         userRef.set(newUser)
                 .addOnSuccessListener(aVoid -> {
                     Log.d(TAG, "Tạo người dùng mới trong Firestore thành công");
-                    navigateToMainActivity(user.getUid());
+                    navigateAfterLogin(user.getUid());
                 })
                 .addOnFailureListener(e -> {
                     Log.w(TAG, "Lỗi khi tạo người dùng mới trong Firestore", e);
@@ -225,7 +229,7 @@ public class LoginFragment extends Fragment {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null) {
-                            navigateToMainActivity(user.getUid());
+                            navigateAfterLogin(user.getUid());
                         }
                     } else {
                         Toast.makeText(requireActivity(), "Đăng nhập thất bại: " +
@@ -234,10 +238,25 @@ public class LoginFragment extends Fragment {
                 });
     }
 
-    private void navigateToMainActivity(String userId) {
-        Toast.makeText(requireContext(), "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
-        startActivity(new Intent(requireActivity(), MainActivity.class)
-                .putExtra("userId", userId));
-        requireActivity().finish();
+    private void navigateAfterLogin(String userId) {
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    String role = documentSnapshot.getString("role");
+                    if ("admin".equals(role)) {
+                        // Đăng nhập với quyền admin
+                        Toast.makeText(requireContext(), "Chào Admin!", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(requireActivity(), HomeAdminActivity.class)
+                                .putExtra("userId", userId));
+                    } else {
+                        // Người dùng bình thường
+                        Toast.makeText(requireContext(), "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(requireActivity(), MainActivity.class)
+                                .putExtra("userId", userId));
+                    }
+                    requireActivity().finish();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(requireContext(), "Lỗi kiểm tra quyền tài khoản", Toast.LENGTH_SHORT).show();
+                });
     }
 }

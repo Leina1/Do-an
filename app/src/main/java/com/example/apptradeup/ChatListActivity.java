@@ -29,12 +29,25 @@ public class ChatListActivity extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.recyclerViewChats);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new ChatListAdapter(chatList, FirebaseAuth.getInstance().getCurrentUser().getUid(),
-                (chat, otherUserId) -> openChatActivity(chat.getId(), otherUserId));
-        recyclerView.setAdapter(adapter);
 
         db = FirebaseFirestore.getInstance();
-        currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        currentUserId = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : null;
+
+        adapter = new ChatListAdapter(
+                this, // context
+                chatList,
+                currentUserId,
+                (chat, otherUserId) -> openChatActivity(chat.getId(), otherUserId)
+        );
+        recyclerView.setAdapter(adapter);
+
+        if (currentUserId == null) {
+            Toast.makeText(this, "Không xác định được người dùng!", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         loadChatList();
     }
@@ -44,12 +57,18 @@ public class ChatListActivity extends AppCompatActivity {
                 .whereArrayContains("members", currentUserId)
                 .orderBy("lastTimestamp", Query.Direction.DESCENDING)
                 .addSnapshotListener((value, error) -> {
-                    if (error != null) return;
+//                    if (error != null) {
+//                        Toast.makeText(this, "Lỗi khi tải danh sách chat!", Toast.LENGTH_SHORT).show();
+//                        return;
+//                    }
+                    if (value == null) return;
                     chatList.clear();
                     for (DocumentSnapshot doc : value) {
                         Chat chat = doc.toObject(Chat.class);
-                        chat.setId(doc.getId());
-                        chatList.add(chat);
+                        if (chat != null) {
+                            chat.setId(doc.getId()); // Đảm bảo class Chat có phương thức setId
+                            chatList.add(chat);
+                        }
                     }
                     adapter.notifyDataSetChanged();
                 });

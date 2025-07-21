@@ -53,6 +53,7 @@ dependencies {
     implementation("androidx.credentials:credentials-play-services-auth:1.0.0")
     implementation("com.google.firebase:firebase-storage:20.2.2")
     implementation("com.github.bumptech.glide:glide:4.16.0")
+
     //UI
     // Các thư viện khác trong dự án
     implementation(libs.appcompat)

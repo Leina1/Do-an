@@ -1,0 +1,5 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<!--    <item android:id="@+id/action_view_detail" android:title="Xem chi tiết" />-->
+    <item android:id="@+id/action_ban" android:title="Cấm / Mở cấm" />
+    <item android:id="@+id/action_delete" android:title="Xoá tài khoản" />
+</menu>

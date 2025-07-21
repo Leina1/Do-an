@@ -67,6 +67,9 @@ public class EditProfileFragment extends Fragment {
     private FusedLocationProviderClient fusedLocationClient;
     private String userId;
 
+    // --- Thêm biến này để ưu tiên địa chỉ vừa chọn từ bản đồ
+    private String pendingAddress = null;
+
     // Image picker launcher
     private final ActivityResultLauncher<Intent> imagePickerLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -96,7 +99,8 @@ public class EditProfileFragment extends Fragment {
                 }
             });
 
-    public EditProfileFragment() {}
+    public EditProfileFragment() {
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -141,6 +145,15 @@ public class EditProfileFragment extends Fragment {
             }
         });
 
+        // Nhận kết quả chọn địa chỉ từ PickLocationFragment
+        getParentFragmentManager().setFragmentResultListener("location_result", this, (requestKey, bundle) -> {
+            String address = bundle.getString("address");
+            if (address != null && !address.isEmpty()) {
+                pendingAddress = address;
+                edtAddress.setText(address);
+            }
+        });
+
         // Chọn địa chỉ trên bản đồ (PickLocationFragment)
         edtAddress.setOnClickListener(v -> {
             requireActivity().getSupportFragmentManager()
@@ -148,14 +161,6 @@ public class EditProfileFragment extends Fragment {
                     .replace(R.id.fragment_container, new PickLocationFragment())
                     .addToBackStack(null)
                     .commit();
-        });
-
-        // Lắng nghe kết quả chọn địa chỉ từ PickLocationFragment
-        getParentFragmentManager().setFragmentResultListener("location_result", this, (requestKey, bundle) -> {
-            String address = bundle.getString("address");
-            if (address != null && !address.isEmpty()) {
-                edtAddress.setText(address);
-            }
         });
 
         // Lấy dữ liệu user từ Firestore
@@ -169,7 +174,10 @@ public class EditProfileFragment extends Fragment {
                     edtBirthday.setText(documentSnapshot.getString("birthday"));
                     edtEmail.setText(documentSnapshot.getString("email"));
                     edtPhone.setText(documentSnapshot.getString("phone"));
-                    edtAddress.setText(documentSnapshot.getString("address"));
+                    // --- CHỈ SET address NẾU CHƯA CHỌN ĐỊA CHỈ MỚI
+                    if (pendingAddress == null) {
+                        edtAddress.setText(documentSnapshot.getString("address"));
+                    }
                     String gender = documentSnapshot.getString("gender");
                     if (gender != null) {
                         if (gender.equalsIgnoreCase("Nam")) {
@@ -197,7 +205,8 @@ public class EditProfileFragment extends Fragment {
             String birthday = edtBirthday.getText().toString();
             String email = edtEmail.getText().toString();
             String phone = edtPhone.getText().toString();
-            String address = edtAddress.getText().toString();
+            // --- Ưu tiên lấy pendingAddress nếu có
+            String address = (pendingAddress != null) ? pendingAddress : edtAddress.getText().toString();
             int selectedId = rgGender.getCheckedRadioButtonId();
             String gender = "";
             if (selectedId == R.id.rbMale) gender = "Nam";

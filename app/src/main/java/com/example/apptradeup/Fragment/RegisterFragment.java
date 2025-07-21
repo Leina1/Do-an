@@ -109,6 +109,8 @@ public class RegisterFragment extends Fragment {
         userMap.put("verified", false); // Đánh dấu người dùng chưa xác minh (sẽ thay đổi sau khi xác minh email)
         userMap.put("phone", "");
         userMap.put("Gender", "");
+        userMap.put("role", "user");
+        userMap.put("banned", "false ");
         userMap.put("Cart", new ArrayList<String>());
         db.collection("users").document(userId)
                 .set(userMap)
