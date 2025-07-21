@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardElevation="4dp"
+    app:cardCornerRadius="12dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Tên người mua + SĐT -->
+        <TextView
+            android:id="@+id/tvBuyerName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tên: Nguyễn Văn A (0123456789)"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@android:color/black"/>
+
+        <!-- Địa chỉ -->
+        <TextView
+            android:id="@+id/tvBuyerAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Địa chỉ: Quận 1, TPHCM"
+            android:textSize="14sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginTop="2dp"/>
+
+        <!-- Sản phẩm + số lượng -->
+        <TextView
+            android:id="@+id/tvProductInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sản phẩm: Giày Adidas x 2"
+            android:textSize="15sp"
+            android:layout_marginTop="6dp"/>
+
+        <!-- Tổng tiền -->
+        <TextView
+            android:id="@+id/tvTotalPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tổng tiền: 1.500.000đ"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:textColor="@android:color/holo_red_dark"
+            android:layout_marginTop="2dp"/>
+
+        <!-- Trạng thái -->
+        <TextView
+            android:id="@+id/tvOrderStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đang chờ xử lý của người bán"
+            android:textSize="14sp"
+            android:textColor="@android:color/holo_orange_dark"
+            android:layout_marginTop="4dp"/>
+
+        <!-- Hàng chứa 2 nút xác nhận, căn ngang -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="end">
+
+            <!-- Nút xác nhận giao hàng (người bán) -->
+            <Button
+                android:id="@+id/btnSellerReject"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Từ chối"
+                android:backgroundTint="@color/red"
+                android:visibility="gone"/>
+            <Button
+                android:id="@+id/btnSellerConfirm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Xác nhận giao hàng"
+                android:backgroundTint="@android:color/holo_green_dark"
+                android:textColor="@android:color/white"
+                android:layout_marginEnd="8dp"/>
+
+            <!-- Nút xác nhận nhận hàng (người mua) -->
+            <Button
+                android:id="@+id/btnBuyerConfirm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Xác nhận nhận hàng"
+                android:backgroundTint="@android:color/holo_blue_dark"
+                android:textColor="@android:color/white"/>
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

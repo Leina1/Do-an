@@ -11,8 +11,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.apptradeup.adapter.ItemCartAdapter;
 import com.google.firebase.firestore.FirebaseFirestore;
+import android.view.View;
+import android.widget.AdapterView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 
 import java.lang.reflect.Type;
 import java.util.*;
@@ -41,13 +44,18 @@ public class CheckoutActivity extends AppCompatActivity {
     private double discount = 0;
     private double totalAmount = 0;
     private String selectedPaymentMethod = "Tiền mặt";
+    private Spinner spinnerDiscount;
+    private boolean isFromOffer = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_checkout);
 
+        isFromOffer = getIntent().getBooleanExtra("fromOffer", false);
         // Khởi tạo view
+
+        spinnerDiscount = findViewById(R.id.spinnerDiscount);
         txtUserName = findViewById(R.id.tvUserName);
         txtUserPhone = findViewById(R.id.tvUserPhone);
         txtUserAddress = findViewById(R.id.tvUserAddress);
@@ -58,7 +66,33 @@ public class CheckoutActivity extends AppCompatActivity {
         txtShippingCost= findViewById(R.id.tvShippingCost);
         txtDiscount = findViewById(R.id.tvDiscount);
         txtTotalAmount= findViewById(R.id.tvTotalAmount);
+        if (!isFromOffer) {
+            spinnerDiscount.setVisibility(View.GONE);
+            discount = 0;
+        } else {
+            spinnerDiscount.setVisibility(View.VISIBLE);
 
+            spinnerDiscount.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    int[] percents = {10, 15, 20};
+                    int percent = percents[position];
+                    discount = totalPrice * percent / 100.0;
+                    txtDiscount.setText(String.format("%,.0f đ", discount));
+                    totalAmount = totalPrice + shippingCost - discount;
+                    txtTotalAmount.setText(String.format("%,.0f đ", totalAmount));
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                    // Nếu không chọn thì discount là 0, cập nhật lại total
+                    discount = 0;
+                    txtDiscount.setText(String.format("%,.0f đ", discount));
+                    totalAmount = totalPrice + shippingCost;
+                    txtTotalAmount.setText(String.format("%,.0f đ", totalAmount));
+                }
+            });
+        }
         StrictMode.ThreadPolicy policy = new
                 StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -131,10 +165,8 @@ public class CheckoutActivity extends AppCompatActivity {
         // Xử lý đặt hàng
         btnPlaceOrder.setOnClickListener(v -> {
             if ("Tiền mặt".equals(selectedPaymentMethod)) {
-                // Nếu chọn Tiền mặt, gọi hàm placeOrder() để lưu đơn hàng vào Firestore
-                placeOrder();
+                placeOrder("Đặt hàng thành công");
             } else if ("Chuyển khoản".equals(selectedPaymentMethod)) {
-                // Nếu chọn Chuyển khoản, tạo mã QR cho thanh toán chuyển khoản
                 CreateOrder orderApi = new CreateOrder();
                 try {
                     JSONObject data = orderApi.createOrder(totalAmountString);
@@ -144,18 +176,15 @@ public class CheckoutActivity extends AppCompatActivity {
                         ZaloPaySDK.getInstance().payOrder(CheckoutActivity.this, token, "demozpdk://app", new PayOrderListener() {
                             @Override
                             public void onPaymentSucceeded(String s, String s1, String s2) {
-                                Intent intent1 = new Intent(CheckoutActivity.this, PaymentNotification.class);
-                                intent1.putExtra("result", "Thanh toán thành công");
-                                startActivity(intent1);
+                                // Chỉ tạo đơn hàng và chuyển màn khi đã lưu xong Firestore!
+                                placeOrder("Thanh toán thành công");
                             }
-
                             @Override
                             public void onPaymentCanceled(String s, String s1) {
                                 Intent intent1 = new Intent(CheckoutActivity.this, PaymentNotification.class);
                                 intent1.putExtra("result", "Hủy thanh toán");
                                 startActivity(intent1);
                             }
-
                             @Override
                             public void onPaymentError(ZaloPayError zaloPayError, String s, String s1) {
                                 Intent intent1 = new Intent(CheckoutActivity.this, PaymentNotification.class);
@@ -164,11 +193,10 @@ public class CheckoutActivity extends AppCompatActivity {
                             }
                         });
                     }
-
                 } catch (Exception e) {
                     e.printStackTrace();
+                    // Có thể thông báo lỗi tạo QR ở đây
                 }
-
             }
         });
     }
@@ -178,7 +206,7 @@ public class CheckoutActivity extends AppCompatActivity {
         ZaloPaySDK.getInstance().onResult(intent);
     }
 
-    private void placeOrder() {
+    private void placeOrder(String message) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         List<Map<String, Object>> items = new ArrayList<>();
@@ -188,24 +216,45 @@ public class CheckoutActivity extends AppCompatActivity {
             item.put("title", p.getTitle());
             item.put("price", p.getPrice());
             item.put("quantity", quantities.getOrDefault(p.getId(), 1));
+            item.put("sellerId", p.getSellerId());
+            item.put("imageUrl", p.getImages().get(0)); // Lấy ảnh đầu tiên, nhớ kiểm tra null!
             items.add(item);
         }
-
         Map<String, Object> order = new HashMap<>();
-        order.put("userId", userId);
+        order.put("buyerId", userId); // Đã dùng "buyerId" rồi
         order.put("items", items);
+        order.put("discount", discount);
         order.put("total", totalPrice);
+        order.put("totalAmount", totalAmount);
         order.put("paymentMethod", selectedPaymentMethod);
         order.put("timestamp", System.currentTimeMillis());
+        order.put("completed", false);
+        order.put("buyerConfirmed", false);
+        order.put("sellerConfirmed", false);
+        if (isFromOffer) {
+            order.put("orderType", "offer");
+
+        } else {
+            order.put("orderType", "normal");
+        }
 
         db.collection("orders")
                 .add(order)
                 .addOnSuccessListener(docRef -> {
-                    Toast.makeText(this, "Đặt hàng thành công!", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(CheckoutActivity.this, PaymentNotification.class);
+                    intent.putExtra("result", "Thanh toán thành công");
+                    intent.putExtra("orderId", docRef.getId());
+                    intent.putExtra("totalAmount", String.format("%,.0f", totalAmount));
+                    intent.putExtra("paymentType", selectedPaymentMethod);
+                    startActivity(intent);
                     finish();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Lỗi khi đặt hàng", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(CheckoutActivity.this, PaymentNotification.class);
+                    intent.putExtra("result", "Lỗi khi đặt hàng");
+                    startActivity(intent);
                 });
     }
+
+
 }

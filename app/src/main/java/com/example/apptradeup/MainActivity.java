@@ -2,7 +2,6 @@ package com.example.apptradeup;
 
 import android.os.Bundle;
 
-import android.util.Log;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,8 +9,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.apptradeup.Fragment.HomeFragment;
-import com.example.apptradeup.Fragment.EditProfileFragment;
+import com.example.apptradeup.ProfileFragment.EditProfileFragment;
+import com.example.apptradeup.Fragment.NotificationFragment;
 import com.example.apptradeup.FragmentAddListing.FragmentManageListings;
+import com.example.apptradeup.ProfileFragment.ProfileFragment;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -39,8 +40,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Xử lý các nút bấm
         btnHome.setOnClickListener(v -> loadFragmentWithUserId(new HomeFragment()));
-        btnProfile.setOnClickListener(v -> loadFragmentWithUserId(new EditProfileFragment()));
+        btnProfile.setOnClickListener(v -> loadFragmentWithUserId(new ProfileFragment()));
         btnAddListing.setOnClickListener(v -> loadFragmentWithUserId(new FragmentManageListings()));
+        btnNotifications.setOnClickListener(v -> {loadFragmentWithUserId(new NotificationFragment());});
     }
     /**
      * Hàm tải Fragment và truyền userId nếu cần

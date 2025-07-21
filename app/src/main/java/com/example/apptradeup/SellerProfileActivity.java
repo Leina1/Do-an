@@ -28,7 +28,7 @@ import java.util.List;
 public class SellerProfileActivity extends AppCompatActivity {
 
     private ImageView imgAvatar, btnBack;
-    private Button btnChat;
+    private Button btnChat,btnOffer;
     private TextView txtName, txtEmail, txtRating, txtProductCount;
     private RecyclerView recyclerView;
     private ProductAdapter adapter;
@@ -49,6 +49,7 @@ public class SellerProfileActivity extends AppCompatActivity {
         txtProductCount = findViewById(R.id.txtProductCount);
         btnChat = findViewById(R.id.btnChat);
         btnBack = findViewById(R.id.btnBack);
+
 
         btnBack.setOnClickListener(v -> finish());
 
@@ -155,16 +156,36 @@ public class SellerProfileActivity extends AppCompatActivity {
 
     private void loadSellerProducts(String userId) {
         db.collection("items")
-                .whereEqualTo("userId", userId)
+                .whereEqualTo("sellerId", userId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     sellerProducts.clear();
+                    double totalRating = 0;
+                    int totalCount = 0;
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         Product product = doc.toObject(Product.class);
                         product.setId(doc.getId());
                         sellerProducts.add(product);
+
+                        // Tính tổng rating và số lượt đánh giá từ tất cả review của sản phẩm này
+                        List<Product.Review> reviews = product.getReviews();
+                        if (reviews != null) {
+                            for (Product.Review review : reviews) {
+                                totalRating += review.getRating();
+                                totalCount++;
+                            }
+                        }
                     }
                     txtProductCount.setText("\u2022 " + sellerProducts.size() + " sản phẩm");
+
+                    // Hiển thị rating trung bình
+                    if (totalCount > 0) {
+                        double avg = totalRating / totalCount;
+                        txtRating.setText("\u2B50 " + String.format("%.1f", avg));
+                    } else {
+                        txtRating.setText("\u2B50 Chưa có đánh giá");
+                    }
+
                     adapter.updateList(new ArrayList<>(sellerProducts));
                 })
                 .addOnFailureListener(e -> {

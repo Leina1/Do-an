@@ -66,4 +66,9 @@
     <string name="user_name">Tên: Nguyễn Văn A</string>
     <string name="user_phone">SĐT: 0123456789</string>
     <string name="user_address">Địa chỉ: 123 Đường ABC, TP.HCM</string>
+    <string-array name="discount_percentages">
+        <item>10%</item>
+        <item>15%</item>
+        <item>20%</item>
+    </string-array>
 </resources>

@@ -1,10 +1,101 @@
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools" android:id="@+id/home" android:layout_width="match_parent" android:layout_height="match_parent" android:padding="8dp" tools:context=".Fragment.HomeFragment">
-    <!--  Thanh tìm kiếm + Giỏ hàng + Chat  -->
-    <LinearLayout android:id="@+id/topBar" android:layout_width="0dp" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:padding="4dp" app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent">
-        <EditText android:id="@+id/searchEditText" android:layout_width="0dp" android:layout_weight="1" android:layout_height="40dp" android:hint="Tìm kiếm sản phẩm" android:background="@drawable/search_background" android:paddingHorizontal="12dp" android:drawablePadding="8dp"/>
-        <ImageButton android:id="@+id/btnCart" android:layout_width="40dp" android:layout_height="40dp" android:src="@drawable/ic_cart" android:background="@null" android:contentDescription="Cart" android:layout_marginStart="8dp"/>
-        <ImageButton android:id="@+id/btnChat" android:layout_width="40dp" android:layout_height="40dp" android:src="@drawable/ic_chat" android:background="@null" android:contentDescription="Chat" android:layout_marginStart="8dp"/>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/home"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="8dp"
+    tools:context=".Fragment.HomeFragment">
+
+    <!-- Thanh tìm kiếm + Giỏ hàng + Chat -->
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="4dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <EditText
+            android:id="@+id/searchEditText"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="40dp"
+            android:hint="Tìm kiếm sản phẩm"
+            android:background="@drawable/search_background"
+            android:paddingHorizontal="12dp"
+            android:drawablePadding="8dp"/>
+
+        <ImageButton
+            android:id="@+id/btnCart"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_cart"
+            android:background="@null"
+            android:contentDescription="Cart"
+            android:layout_marginStart="8dp"/>
+
+        <ImageButton
+            android:id="@+id/btnChat"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_chat"
+            android:background="@null"
+            android:contentDescription="Chat"
+            android:layout_marginStart="8dp"/>
     </LinearLayout>
-    <!--  Danh sách sản phẩm dạng Grid  -->
-    <androidx.recyclerview.widget.RecyclerView android:id="@+id/recyclerViewProducts" android:layout_width="0dp" android:layout_height="0dp" android:clipToPadding="false" android:padding="4dp" app:layoutManager="androidx.recyclerview.widget.GridLayoutManager" app:spanCount="2" app:layout_constraintTop_toBottomOf="@id/topBar" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Thanh sắp xếp giá -->
+    <LinearLayout
+        android:id="@+id/priceSortBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/btnSortAsc"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_sort_btn"
+            android:elevation="2dp"
+            android:paddingHorizontal="12dp"
+            android:text="↑ Tăng dần"
+            android:textColor="#222222"
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/btnSortDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="↓ Giảm dần"
+            android:textSize="10sp"
+            android:background="@drawable/bg_sort_btn"
+            android:textColor="#222222"
+            android:paddingHorizontal="12dp"
+            android:elevation="2dp"/>
+    </LinearLayout>
+
+    <!-- Danh sách sản phẩm dạng Grid -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewProducts"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:padding="4dp"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="2"
+        app:layout_constraintTop_toBottomOf="@id/priceSortBar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

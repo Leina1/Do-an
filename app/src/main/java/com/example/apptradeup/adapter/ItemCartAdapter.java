@@ -134,8 +134,11 @@ public class ItemCartAdapter extends RecyclerView.Adapter<ItemCartAdapter.CartVi
                                         .update("Cart", cart)
                                         .addOnSuccessListener(aVoid -> {
                                             Toast.makeText(context, "Đã xóa khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
-                                            cartList.remove(position);
-                                            notifyItemRemoved(position);
+                                            // Bổ sung kiểm tra index!
+                                            if (position >= 0 && position < cartList.size()) {
+                                                cartList.remove(position);
+                                                notifyItemRemoved(position);
+                                            }
                                             if (listener != null) listener.onProductSelectionChanged();
                                         })
                                         .addOnFailureListener(e ->
@@ -144,6 +147,7 @@ public class ItemCartAdapter extends RecyclerView.Adapter<ItemCartAdapter.CartVi
                             }
                         });
             });
+
         }
     }
 

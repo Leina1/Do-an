@@ -16,6 +16,9 @@ import com.example.apptradeup.ProductDetailActivity;
 import com.example.apptradeup.R;
 import com.squareup.picasso.Picasso;
 
+import org.checkerframework.checker.units.qual.A;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> {
@@ -26,6 +29,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     public ProductAdapter(Context context, List<Product> products) {
         this.context = context;
         this.productList = products;
+    }
+    public List<Product> getCurrentList() {
+        return new ArrayList<>(this.productList);
     }
 
     public static class ProductViewHolder extends RecyclerView.ViewHolder {

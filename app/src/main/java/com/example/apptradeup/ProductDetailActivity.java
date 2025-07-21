@@ -1,4 +1,5 @@
 package com.example.apptradeup;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,25 +11,33 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.apptradeup.adapter.ImagePagerAdapter;
+import com.example.apptradeup.adapter.ReviewAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class ProductDetailActivity extends AppCompatActivity {
     private String itemId;
     private FirebaseFirestore db;
     private String sellerId;
     private ViewPager2 viewPagerImages;
     private ImageView imgSellerAvatar;
-    private TextView txtProductTitle, txtProductPrice, txtSold, txtQuatity, txtLocation, txtDescription, txtSellerName;
+    private TextView txtProductTitle, txtProductPrice, txtSold, txtQuatity, txtLocation, txtDescription, txtSellerName, txtUserReviewsLabel;
     private RecyclerView recyclerViewReviews;
     private ImageButton btnChat, btnAddToCart, btnBack;
+    private Button btnBuy,btnOffer;
 
-    private Button btnBuy;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,10 +65,15 @@ public class ProductDetailActivity extends AppCompatActivity {
         imgSellerAvatar = findViewById(R.id.imgSellerAvatar);
         txtSellerName = findViewById(R.id.txtSellerName);
         recyclerViewReviews = findViewById(R.id.recyclerViewReviews);
+        txtUserReviewsLabel = findViewById(R.id.txtUserReviewsLabel); // Để hiện "Chưa có đánh giá nào" nếu cần
         btnBack = findViewById(R.id.btnBack);
         btnChat= findViewById(R.id.btnChat);
         btnAddToCart = findViewById(R.id.btnAddToCart);
         btnBuy = findViewById(R.id.btnBuyNow);
+        btnOffer= findViewById(R.id.btnOffers);
+
+        // Set LayoutManager cho RecyclerView
+        recyclerViewReviews.setLayoutManager(new LinearLayoutManager(this));
 
         btnBack.setOnClickListener(v -> finish());
 
@@ -128,6 +142,39 @@ public class ProductDetailActivity extends AppCompatActivity {
                         Toast.makeText(this, "Lỗi tải dữ liệu sản phẩm", Toast.LENGTH_SHORT).show();
                     });
         });
+        btnOffer.setOnClickListener(v -> {
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                Toast.makeText(this, "Bạn chưa đăng nhập", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            db.collection("items").document(itemId).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            Product product = documentSnapshot.toObject(Product.class);
+                            if (product != null) {
+                                product.setId(itemId);
+                                List<Product> productList = new ArrayList<>();
+                                productList.add(product);
+                                Map<String, Integer> quantities = new HashMap<>();
+                                quantities.put(itemId, 1);
+
+                                Intent intent = new Intent(ProductDetailActivity.this, CheckoutActivity.class);
+                                intent.putExtra("selectedProducts", new com.google.gson.Gson().toJson(productList));
+                                intent.putExtra("quantities", new com.google.gson.Gson().toJson(quantities));
+                                intent.putExtra("userId", currentUser.getUid());
+                                intent.putExtra("fromOffer", true); // <-- Thêm key này
+                                startActivity(intent);
+                            }
+                        } else {
+                            Toast.makeText(this, "Không tìm thấy sản phẩm", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Lỗi tải dữ liệu sản phẩm", Toast.LENGTH_SHORT).show();
+                    });
+        });
 
         // Load chi tiết sản phẩm
         loadProductDetails();
@@ -139,8 +186,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                     if (documentSnapshot.exists()) {
                         Product product = documentSnapshot.toObject(Product.class);
                         if (product != null) {
-                            // Gán dữ liệu sản phẩm vào View
-                            Log.d("ProductDetail", "Seller UserId: " + product.getUserId()); // Thêm log để kiểm tra userId
+                            Log.d("ProductDetail", "Seller UserId: " + product.getSellerId());
 
                             txtProductTitle.setText(product.getTitle());
                             txtProductPrice.setText(String.format("%,.0fđ", product.getPrice()));
@@ -159,8 +205,18 @@ public class ProductDetailActivity extends AppCompatActivity {
                                 viewPagerImages.getChildAt(0).setOverScrollMode(android.view.View.OVER_SCROLL_NEVER);
                             }
 
+                            // HIỂN THỊ REVIEW
+                            List<Product.Review> reviewList = product.getReviews();
+                            if (reviewList != null && !reviewList.isEmpty()) {
+                                recyclerViewReviews.setAdapter(new ReviewAdapter(this, reviewList));
+                                txtUserReviewsLabel.setText("Đánh giá của người dùng");
+                            } else {
+                                recyclerViewReviews.setAdapter(null);
+                                txtUserReviewsLabel.setText("Chưa có đánh giá nào");
+                            }
+
                             // Load thông tin người bán
-                            loadSellerInfo(product.getUserId());
+                            loadSellerInfo(product.getSellerId());
                         }
                     } else {
                         Toast.makeText(this, "Không tìm thấy sản phẩm", Toast.LENGTH_SHORT).show();
@@ -171,6 +227,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                     Toast.makeText(this, "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show();
                     finish();
                 });
+
     }
 
     private void loadSellerInfo(String userId) {
@@ -193,4 +250,3 @@ public class ProductDetailActivity extends AppCompatActivity {
                 });
     }
 }
-

@@ -76,7 +76,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 
 public class FragmentAddItem extends Fragment {
     private EditText edtAddress;
-    private String userId;
+    private String sellerId ;
     private ImageView ItemImageView;
     private Uri imageUri;
     private List<Uri> imageUris = new ArrayList<>();
@@ -177,7 +177,7 @@ public class FragmentAddItem extends Fragment {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCondition.setAdapter(adapter);
         if (getArguments() != null) {
-            userId = getArguments().getString("userId");
+            sellerId  = getArguments().getString("userId");
         }
         if (getArguments() != null && getArguments().getSerializable("product") != null) {
             editingProduct = (Product) getArguments().getSerializable("product");
@@ -301,7 +301,7 @@ public class FragmentAddItem extends Fragment {
             List<String> imageUrls
     ) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String sellerId  = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         Product product = new Product(
                 title,
@@ -311,11 +311,14 @@ public class FragmentAddItem extends Fragment {
                 location,
                 condition,
                 category,  // thêm category
-                userId,
+                sellerId,
                 "Available",
                 imageUrls
         );
         product.setSold(0);
+        product.setReviews(new ArrayList<>()); // Khởi tạo danh sách review rỗng
+        product.setAverageRating(0.0);         // Trung bình đánh giá = 0
+        product.setRatingCount(0);             // Số lượt đánh giá = 0
         db.collection("items")
                 .add(product)
                 .addOnSuccessListener(documentReference -> {

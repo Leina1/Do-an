@@ -6,6 +6,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.text.Editable;
 import android.widget.ImageButton;
@@ -37,6 +38,7 @@ public class HomeFragment extends Fragment {
     private EditText searchEditText;
     private ImageButton btnCart,btnChat;
     private String userId;
+    private Button btnSortAsc, btnSortDesc;
 
     public HomeFragment() {}
 
@@ -48,6 +50,8 @@ public class HomeFragment extends Fragment {
         searchEditText = view.findViewById(R.id.searchEditText);
         btnCart = view.findViewById(R.id.btnCart);
         btnChat = view.findViewById(R.id.btnChat);
+        btnSortAsc = view.findViewById(R.id.btnSortAsc);
+        btnSortDesc = view.findViewById(R.id.btnSortDesc);
 
         userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
@@ -87,6 +91,19 @@ public class HomeFragment extends Fragment {
         });
         btnChat.setOnClickListener(v -> {
             startActivity(new Intent(getContext(), ChatListActivity.class));
+        });
+        btnSortAsc.setOnClickListener(v -> {
+            // Sắp xếp tăng dần theo giá
+            List<Product> sortedList = new ArrayList<>(adapter.getCurrentList()); // adapter.getCurrentList() là hàm tự thêm, xem bên dưới
+            sortedList.sort((p1, p2) -> Double.compare(p1.getPrice(), p2.getPrice()));
+            adapter.updateList(sortedList);
+        });
+
+        btnSortDesc.setOnClickListener(v -> {
+            // Sắp xếp giảm dần theo giá
+            List<Product> sortedList = new ArrayList<>(adapter.getCurrentList());
+            sortedList.sort((p1, p2) -> Double.compare(p2.getPrice(), p1.getPrice()));
+            adapter.updateList(sortedList);
         });
         return view;
     }

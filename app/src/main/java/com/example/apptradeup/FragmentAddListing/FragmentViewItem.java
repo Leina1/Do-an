@@ -184,7 +184,7 @@ public class FragmentViewItem extends Fragment {
             return;
         }
 
-        String userId = user.getUid();
+        String sellerId  = user.getUid();
 
         Product product = new Product(
                 title,
@@ -194,11 +194,14 @@ public class FragmentViewItem extends Fragment {
                 location,
                 condition,
                 category,
-                userId,
+                sellerId ,
                 "Available",
                 imageUrls
         );
         product.setSold(0);
+        product.setReviews(new ArrayList<>()); // Khởi tạo danh sách review rỗng
+        product.setAverageRating(0.0);         // Trung bình đánh giá = 0
+        product.setRatingCount(0);             // Số lượt đánh giá = 0
         db.collection("items")
                 .add(product)
                 .addOnSuccessListener(documentReference -> {

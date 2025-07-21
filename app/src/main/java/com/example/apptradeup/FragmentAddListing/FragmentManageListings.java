@@ -79,7 +79,7 @@ public class FragmentManageListings extends Fragment {
     private void loadProductsFromFirestore() {
         allProducts.clear();
         FirebaseFirestore.getInstance().collection("items")
-                .whereEqualTo("userId", userId)
+                .whereEqualTo("sellerId", userId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {

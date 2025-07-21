@@ -8,7 +8,32 @@
                 <ImageButton android:id="@+id/btnBack" android:layout_width="40dp" android:layout_height="40dp" android:layout_gravity="start|top" android:layout_margin="12dp" android:background="@drawable/rounded_button_bg" android:src="@drawable/ic_arrow_back" android:contentDescription="Quay lại" android:scaleType="centerInside"/>
             </FrameLayout>
             <!--  Tên sản phẩm  -->
-            <TextView android:id="@+id/txtProductTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Tên sản phẩm" android:textStyle="bold" android:textSize="20sp" android:layout_marginTop="12dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:id="@+id/txtProductTitle"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="Tên sản phẩm"
+                    android:textStyle="bold"
+                    android:textSize="20sp" />
+
+                <Button
+                    android:id="@+id/btnOffers"
+                    android:layout_width="3dp"
+                    android:layout_height="38dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#CCCCCC"
+                    android:textColor="#000000"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Offers"/>
+            </LinearLayout>
             <!--  Giá  -->
             <TextView android:id="@+id/txtProductPrice" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="120.000đ" android:textColor="#E91E63" android:textSize="18sp" android:textStyle="bold" android:layout_marginTop="4dp"/>
             <!--  Đã bán  -->
