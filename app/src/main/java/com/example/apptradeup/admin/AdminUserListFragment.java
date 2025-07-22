@@ -81,13 +81,24 @@ public class AdminUserListFragment extends Fragment {
     private final UserAdminAdapter.OnUserActionListener userActionListener = new UserAdminAdapter.OnUserActionListener() {
         @Override
         public void onBanClicked(User user) {
-            String newStatus = "banned".equals(user.getStatus()) ? "active" : "banned";
-            FirebaseFirestore.getInstance().collection("users").document(user.getId())
-                    .update("status", newStatus)
+            boolean newBannedStatus = !user.isBanned();
+            String newStatus = newBannedStatus ? "banned" : "active";
+
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("banned", newBannedStatus);
+            updates.put("status", newStatus);
+
+            FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(user.getId())
+                    .update(updates)
                     .addOnSuccessListener(aVoid -> {
+                        user.setBanned(newBannedStatus);
                         user.setStatus(newStatus);
                         userAdapter.notifyDataSetChanged();
-                        Toast.makeText(getContext(), (newStatus.equals("banned") ? "Đã cấm" : "Đã mở cấm") + " user", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(),
+                                (newBannedStatus ? "Đã cấm" : "Đã mở cấm") + " user",
+                                Toast.LENGTH_SHORT).show();
                     });
         }
 

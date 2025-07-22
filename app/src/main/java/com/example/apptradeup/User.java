@@ -6,17 +6,25 @@ public class User {
     private String email;
     private String role;
     private String status;
-
+    private boolean banned;
     public User() {}
 
-    public User(String id, String display_name, String email, String role, String status) {
+    public User(String id, String display_name, String email, String role, boolean banned,String status) {
         this.id = id;
         this.display_name = display_name;
         this.email = email;
         this.role = role;
-        this.status = status;
+        this.banned = banned;
+        this.status= status;
     }
 
+    public boolean isBanned() {
+        return banned;
+    }
+
+    public void setBanned(boolean banned) {
+        this.banned = banned;
+    }
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
