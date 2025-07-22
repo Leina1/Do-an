@@ -1,5 +1,8 @@
 package com.example.apptradeup;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.EditText;
@@ -18,7 +21,22 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.*;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.InputStream;
 import java.util.*;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okio.BufferedSink;
+import okio.Okio;
 
 public class ChatActivity extends AppCompatActivity {
     private String chatId, otherUserId, currentUserId;
@@ -27,10 +45,27 @@ public class ChatActivity extends AppCompatActivity {
     private List<Message> messageList = new ArrayList<>();
     private EditText edtMessage;
     private ImageButton btnSend;
-    private ImageView AvatarHeader;
+    private ImageView AvatarHeader, imgAddImage;
     private TextView txtNameHeader;
 
     private FirebaseFirestore db;
+    private static final int PICK_IMAGE_REQUEST = 222;
+    private Uri imageUri;
+
+    private void openImagePicker() {
+        Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("image/*");
+        startActivityForResult(intent, PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
+            imageUri = data.getData();
+            uploadImageToCloudinary(imageUri);
+        }
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -46,6 +81,7 @@ public class ChatActivity extends AppCompatActivity {
         btnSend = findViewById(R.id.btnSend);
         AvatarHeader = findViewById(R.id.imgAvatar);
         txtNameHeader = findViewById(R.id.txtUserName);
+        imgAddImage = findViewById(R.id.btnAddImage);
 
         db = FirebaseFirestore.getInstance();
 
@@ -74,6 +110,8 @@ public class ChatActivity extends AppCompatActivity {
                     })
                     .addOnFailureListener(e -> Toast.makeText(this, "Lỗi gửi tin nhắn", Toast.LENGTH_SHORT).show());
         });
+
+        imgAddImage.setOnClickListener(v -> openImagePicker());
 
         loadUserInfo(otherUserId);
     }
@@ -167,5 +205,70 @@ public class ChatActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    // Gửi message dạng ảnh
+    private void sendImageMessage(String imageUrl) {
+        String caption = edtMessage.getText().toString().trim(); // Cho phép gửi caption cùng ảnh, hoặc để trống
+        Message imgMsg = new Message(currentUserId, caption, imageUrl, System.currentTimeMillis());
+
+        db.collection("chats").document(chatId)
+                .collection("messages")
+                .add(imgMsg)
+                .addOnSuccessListener(ref -> {
+                    edtMessage.setText(""); // Xoá caption (nếu có)
+                    db.collection("chats").document(chatId)
+                            .update("lastMessage", "[Đã gửi ảnh]",
+                                    "lastTimestamp", System.currentTimeMillis());
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi gửi ảnh", Toast.LENGTH_SHORT).show());
+    }
+
+    // Upload ảnh lên Cloudinary và nhận link public
+    private void uploadImageToCloudinary(Uri uri) {
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+            File tempFile = File.createTempFile("upload", ".jpg", getCacheDir());
+            BufferedSink sink = Okio.buffer(Okio.sink(tempFile));
+            sink.writeAll(Okio.source(inputStream));
+            sink.close();
+
+            OkHttpClient client = new OkHttpClient();
+
+            RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                    .addFormDataPart("file", tempFile.getName(), RequestBody.create(tempFile, MediaType.parse("image/*")))
+                    .addFormDataPart("upload_preset", "MyShopApp")
+                    .build();
+
+            Request request = new Request.Builder()
+                    .url("https://api.cloudinary.com/v1_1/diumhctnb/image/upload")
+                    .post(requestBody)
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, java.io.IOException e) {
+                    runOnUiThread(() -> Toast.makeText(ChatActivity.this, "Lỗi upload ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws java.io.IOException {
+                    if (!response.isSuccessful()) {
+                        runOnUiThread(() -> Toast.makeText(ChatActivity.this, "Lỗi upload: " + response.code(), Toast.LENGTH_SHORT).show());
+                        return;
+                    }
+                    String responseBody = response.body().string();
+                    try {
+                        JSONObject jsonObject = new JSONObject(responseBody);
+                        String imageUrl = jsonObject.getString("secure_url");
+                        runOnUiThread(() -> sendImageMessage(imageUrl));
+                    } catch (Exception e) {
+                        runOnUiThread(() -> Toast.makeText(ChatActivity.this, "Lỗi parse URL", Toast.LENGTH_SHORT).show());
+                    }
+                }
+            });
+        } catch (Exception e) {
+            Toast.makeText(ChatActivity.this, "Lỗi đọc file ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 }

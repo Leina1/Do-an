@@ -210,7 +210,7 @@ public class LoginFragment extends Fragment {
         newUser.put("last_active", System.currentTimeMillis());
         newUser.put("Cart", new ArrayList<String>());
         newUser.put("role", "user");
-        newUser.put("banned", "false ");
+        newUser.put("banned", false );
 
         userRef.set(newUser)
                 .addOnSuccessListener(aVoid -> {
@@ -242,6 +242,23 @@ public class LoginFragment extends Fragment {
         db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     String role = documentSnapshot.getString("role");
+                    Boolean banned = false;
+                    // Nếu kiểu lưu là boolean thực sự
+                    if (documentSnapshot.contains("banned")) {
+                        Object bannedObj = documentSnapshot.get("banned");
+                        if (bannedObj instanceof Boolean) {
+                            banned = (Boolean) bannedObj;
+                        } else if (bannedObj instanceof String) {
+                            // Nếu lưu dưới dạng chuỗi (cũ)
+                            banned = "true".equalsIgnoreCase((String) bannedObj);
+                        }
+                    }
+                    if (Boolean.TRUE.equals(banned)) {
+                        Toast.makeText(requireContext(), "Tài khoản của bạn đã bị cấm. Vui lòng liên hệ admin!", Toast.LENGTH_LONG).show();
+                        // Logout tài khoản ngay
+                        FirebaseAuth.getInstance().signOut();
+                        return;
+                    }
                     if ("admin".equals(role)) {
                         // Đăng nhập với quyền admin
                         Toast.makeText(requireContext(), "Chào Admin!", Toast.LENGTH_SHORT).show();

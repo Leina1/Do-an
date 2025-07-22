@@ -18,6 +18,16 @@
             android:layout_height="wrap_content"
             android:text="Tin nhắn của mình"
             android:textSize="16sp"/>
+
+        <!-- Thêm ImageView cho ảnh gửi, mặc định ẩn -->
+        <ImageView
+            android:id="@+id/imgMessage"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_marginTop="4dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"/>
+
         <TextView
             android:id="@+id/txtTime"
             android:layout_width="wrap_content"

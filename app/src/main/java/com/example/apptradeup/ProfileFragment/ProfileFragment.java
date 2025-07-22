@@ -19,6 +19,7 @@ import com.example.apptradeup.Fragment.LoginFragment;
 import com.bumptech.glide.Glide;
 import com.example.apptradeup.R;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -28,10 +29,11 @@ public class ProfileFragment extends Fragment {
     private String userId;
     private ImageView imgAvatar;
     private TextView tvDisplayName, tvEmail;
-    private Button btnEditProfile, btnLogout;
+    private Button btnEditProfile, btnLogout , btnRemoveAccount;
     private LinearLayout layoutOrderHistory, layoutSellHistory, layoutReviews;
 
     private FirebaseFirestore db;
+
 
     @Nullable
     @Override
@@ -55,6 +57,7 @@ public class ProfileFragment extends Fragment {
         layoutOrderHistory = view.findViewById(R.id.layoutOrderHistory);
         layoutSellHistory = view.findViewById(R.id.layoutSellHistory);
         layoutReviews = view.findViewById(R.id.layoutReviews);
+        btnRemoveAccount = view.findViewById(R.id.btnDeleteAccount);
 
         db = FirebaseFirestore.getInstance();
 
@@ -114,6 +117,16 @@ public class ProfileFragment extends Fragment {
                     .replace(R.id.fragment_container, new LoginFragment())
                     .commit();
         });
+        btnRemoveAccount.setOnClickListener(v -> {
+            new android.app.AlertDialog.Builder(getContext())
+                    .setTitle("Xoá tài khoản")
+                    .setMessage("Bạn chắc chắn muốn xoá tài khoản này? Thao tác này không thể hoàn tác.")
+                    .setPositiveButton("Xoá", (dialog, which) -> {
+                        deleteAccount();
+                    })
+                    .setNegativeButton("Huỷ", null)
+                    .show();
+        });
 
         return view;
     }
@@ -152,4 +165,37 @@ public class ProfileFragment extends Fragment {
             Toast.makeText(getContext(), "Lỗi tải thông tin: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         });
     }
+    private void deleteAccount() {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        FirebaseUser user = auth.getCurrentUser();
+
+        if (user == null) {
+            Toast.makeText(getContext(), "Không tìm thấy người dùng.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Xoá document trên Firestore trước (có thể đảo ngược thứ tự, nhưng nên xoá data trước)
+        db.collection("users").document(user.getUid()).delete()
+                .addOnSuccessListener(aVoid -> {
+                    // Xoá thành công Firestore, giờ xoá tài khoản Auth
+                    user.delete()
+                            .addOnSuccessListener(aVoid2 -> {
+                                Toast.makeText(getContext(), "Đã xoá tài khoản!", Toast.LENGTH_SHORT).show();
+
+                                // Xoá hết backstack & chuyển về Login
+                                requireActivity().getSupportFragmentManager().popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                                requireActivity().getSupportFragmentManager()
+                                        .beginTransaction()
+                                        .replace(R.id.fragment_container, new LoginFragment())
+                                        .commit();
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(getContext(), "Lỗi xoá Auth: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Lỗi xoá dữ liệu: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+    }
+
 }

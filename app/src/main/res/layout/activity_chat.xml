@@ -66,11 +66,22 @@
             android:background="@drawable/bg_edittext_rounded"
             android:padding="8dp"/>
 
+        <!-- Nút gửi ảnh mới thêm -->
+        <ImageButton
+            android:id="@+id/btnAddImage"
+            android:layout_width="48dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="4dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_add"
+            android:contentDescription="Chọn ảnh"/>
+
         <ImageButton
             android:id="@+id/btnSend"
             android:layout_width="48dp"
             android:layout_height="40dp"
             android:background="@android:color/transparent"
-            android:src="@drawable/ic_send"/>
+            android:src="@drawable/ic_send"
+            android:contentDescription="Gửi"/>
     </LinearLayout>
 </LinearLayout>
