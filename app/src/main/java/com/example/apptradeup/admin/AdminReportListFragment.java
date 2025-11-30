@@ -52,6 +52,8 @@ public class AdminReportListFragment extends Fragment {
                 .addOnFailureListener(e -> {
                     Log.e("REPORT", "Failed to load reports", e);
                 });
+
     }
+
 }
 
